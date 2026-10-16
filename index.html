@@ -1,0 +1,1524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>MotifMe Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,500&family=Albert+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen studio. Slim top bar (wordmark, Ask Mofi, tabs), then a three-column workspace: assets | artboard | inspector. Stacks on phones. */
+:root{
+  --paper:#F6F6F4; --surface:#FFFFFF; --soft:#F0EEF2; --ink:#18161C; --muted:#6C6873; --line:#E4E1E8;
+  --accent:#D3376F; --accent-soft:#FBE3EC; --on-accent:#FFFFFF; --cobalt:#2E4FD6; --ok:#1F8A5B;
+  --shadow:0 1px 2px rgba(24,22,28,.06),0 8px 24px rgba(24,22,28,.06);
+  --f-display:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-body:"Albert Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111014; --surface:#1A191E; --soft:#232128; --ink:#F1EEF4; --muted:#A39EAB; --line:#2E2C35;
+  --accent:#F0619A; --accent-soft:#3A1C29; --on-accent:#16070D; --cobalt:#8297FF; --ok:#4CC28A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111014; --surface:#1A191E; --soft:#232128; --ink:#F1EEF4; --muted:#A39EAB; --line:#2E2C35;
+  --accent:#F0619A; --accent-soft:#3A1C29; --on-accent:#16070D; --cobalt:#8297FF; --ok:#4CC28A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.app{display:flex;flex-direction:column;height:100%}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);background:none;border:0;padding:0}
+.word{font-family:var(--f-display);font-size:24px;line-height:1;letter-spacing:-.01em}
+.word b{font-weight:900}.word i{font-weight:400;color:var(--accent)}
+.brand small{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.ask{display:flex;align-items:center;gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 14px;min-width:0}
+.ask input{flex:1;min-width:0;border:0;background:transparent;outline:none;padding:6px 0}
+.ask input::placeholder{color:var(--muted)}
+.ask svg{flex:none;color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.dark{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.accent{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.pill{border-radius:999px}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.count{font-family:var(--f-mono);font-size:11px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:0 6px}
+.right{display:flex;gap:8px;align-items:center}
+.tabs{grid-column:1/-1;display:flex;gap:2px;overflow-x:auto;margin:2px 0 -10px;scrollbar-width:none}
+.tab{border:0;background:none;padding:9px 12px 11px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .step{font-family:var(--f-mono);font-size:10px;margin-right:6px;color:var(--muted)}
+
+/* ---------- workspace ---------- */
+main{flex:1;min-height:0;display:flex}
+.view{flex:1;min-height:0;display:grid}
+.view[hidden]{display:none!important}
+.side{background:var(--surface);border-right:1px solid var(--line);overflow:auto;min-width:0}
+.side.r{border-right:0;border-left:1px solid var(--line)}
+.sec{padding:16px;border-bottom:1px solid var(--line);display:grid;gap:12px}
+.sec h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sec h3 .btn{text-transform:none;letter-spacing:0}
+.studio{grid-template-columns:260px minmax(0,1fr) 300px}
+.stage{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px;
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:18px 18px}
+.toolbar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:var(--shadow);flex-wrap:wrap;justify-content:center}
+.seg{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-weight:600;font-size:13px;display:inline-flex;gap:6px;align-items:center;color:var(--muted)}
+.seg[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.board{position:relative;width:min(100%,62vh,560px);aspect-ratio:1;max-width:100%;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden;touch-action:none}
+.board svg{width:100%;height:100%;display:block}
+.board.drawing{cursor:crosshair}
+.chip{position:absolute;left:12px;bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--muted)}
+.chip b{color:var(--ink);font-weight:500}
+.symchip{position:absolute;left:12px;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;display:flex;gap:8px}
+.symchip span{color:var(--ok)}
+.busy{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--surface) 70%,transparent);font-weight:600;gap:8px}
+.zoom{display:flex;gap:4px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 8px;box-shadow:var(--shadow)}
+.icon{width:32px;height:32px;border-radius:999px;border:0;background:transparent;display:grid;place-items:center;color:var(--ink)}
+.icon:hover{background:var(--soft)}
+.icon[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* palette + layers */
+.swatches{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.sw{aspect-ratio:1;border-radius:7px;border:1px solid rgba(0,0,0,.12);padding:0;position:relative}
+.sw.on::after{content:"";position:absolute;inset:-4px;border:2px solid var(--cobalt);border-radius:10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tagb{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted)}
+.tagb[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+.layers{display:grid;gap:4px}
+.layer{display:grid;grid-template-columns:18px 22px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border-radius:8px;border:1px solid transparent;background:none;text-align:left;width:100%}
+.layer:hover{background:var(--soft)}
+.layer.on{border-color:var(--ink);background:var(--surface)}
+.layer .dot{width:16px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,.15)}
+.layer .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.layer .ty{color:var(--muted);font-size:11px;display:block}
+.layer .eye{border:0;background:none;color:var(--muted);padding:2px}
+.layer.off .nm,.layer.off .dot{opacity:.4}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.addmenu{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.addmenu button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 4px;font-size:12px;display:grid;justify-items:center;gap:4px}
+.addmenu button:hover{border-color:var(--ink)}
+.addmenu svg{width:22px;height:22px}
+
+/* inspector */
+.field{display:grid;gap:6px}
+.field label,.lab{display:flex;justify-content:space-between;font-size:13px;font-weight:500;gap:8px}
+.field label output,.lab output{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.hint{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.counts{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.counts button{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 0;font-family:var(--f-mono);font-size:12px}
+.counts button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.colorin{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12px}
+.colorin input[type=color]{width:26px;height:26px;border:0;padding:0;background:none;border-radius:6px}
+select,.txt{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px}
+textarea.txt{resize:vertical;min-height:70px}
+.tip{background:var(--soft);border-radius:var(--r);padding:12px;display:grid;gap:8px}
+.tip b{font-size:14px}
+.tip p{margin:0;color:var(--muted);font-size:13px}
+
+/* repeat */
+.repeat{grid-template-columns:300px minmax(0,1fr)}
+.preview{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;padding:16px;overflow:auto}
+.pv-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pv-head h2{font-family:var(--f-display);font-weight:700;font-size:22px;margin:0}
+.spec{font-family:var(--f-mono);font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.spec b{color:var(--ink);font-weight:500}
+.canvaswrap{position:relative;flex:1;min-height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.canvaswrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.layouts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.layouts button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 4px 6px;font-size:11.5px;display:grid;justify-items:center;gap:4px;color:var(--muted)}
+.layouts button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.layouts svg{width:40px;height:28px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.unit{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.unit input{border:0;width:100%;padding:8px 10px;background:var(--surface);font-family:var(--f-mono)}
+.unit span{padding:0 10px;color:var(--muted);font-size:12px;font-family:var(--f-mono)}
+
+/* mockups */
+.mock{grid-template-columns:minmax(0,1fr) 300px}
+.mockstage{min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:16px;overflow:auto;align-content:start}
+.mockcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;text-align:left;padding:0}
+.mockcard.on{outline:2px solid var(--ink);outline-offset:-2px}
+.mockcard svg{width:100%;height:auto;display:block;background:var(--soft)}
+.mockcard .cap{display:flex;justify-content:space-between;padding:10px 12px;font-weight:600;font-size:13px}
+.mockcard .cap span{font-family:var(--f-mono);font-weight:400;color:var(--muted);font-size:11px}
+.hero-mock{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hero-mock svg{width:100%;height:auto;display:block;background:var(--soft)}
+.hero-mock .meta{padding:20px;display:grid;gap:12px;align-content:start}
+.hero-mock h2{font-family:var(--f-display);font-size:28px;margin:0;line-height:1.1}
+
+/* board + community */
+.page{overflow:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page-in{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+.ph{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}
+.ph h1{font-family:var(--f-display);font-size:34px;line-height:1.05;margin:0;text-wrap:balance}
+.ph h1 i{font-weight:400;color:var(--accent)}
+.ph p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.masonry{columns:4 220px;column-gap:14px}
+.pin{break-inside:avoid;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:grid}
+.pin img,.pin canvas{width:100%;display:block}
+.pin .pb{padding:10px 12px;display:grid;gap:8px}
+.pin .note{border:0;background:transparent;width:100%;font-size:13px;padding:0;outline:none;color:var(--ink)}
+.pin .note::placeholder{color:var(--muted)}
+.pin .pa{display:flex;gap:6px;flex-wrap:wrap}
+.kind{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.empty{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:28px;text-align:center;color:var(--muted);display:grid;gap:8px;justify-items:center}
+.empty b{color:var(--ink);font-size:16px}
+.comm{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:start}
+.profile{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:sticky;top:0}
+.profile .banner{height:70px}
+.profile .pi{padding:0 16px 16px;display:grid;gap:8px}
+.avatar{width:56px;height:56px;border-radius:999px;border:3px solid var(--surface);margin-top:-28px;background:var(--soft);object-fit:cover}
+.profile h4{margin:0;font-size:16px}
+.stat{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+.stat b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.post{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid}
+.post canvas{width:100%;aspect-ratio:4/3;display:block;height:auto}
+.post .pb{padding:12px 14px;display:grid;gap:8px}
+.who{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.who img{width:24px;height:24px;border-radius:999px}
+.who b{color:var(--ink);font-weight:600}
+.post h4{margin:0;font-family:var(--f-display);font-size:19px;font-weight:700}
+.post p{margin:0;color:var(--muted);font-size:13px}
+.post .pa{display:flex;gap:6px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px}
+.liked{color:var(--accent);border-color:var(--accent)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.house{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--soft);border-radius:999px;padding:2px 8px;color:var(--muted)}
+
+/* modal + toast */
+.modal{position:fixed;inset:0;background:rgba(10,8,14,.45);display:grid;place-items:center;z-index:20;padding:16px}
+.dialog{background:var(--surface);border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:20px;display:grid;gap:14px;box-shadow:var(--shadow)}
+.dialog h2{margin:0;font-family:var(--f-display);font-size:24px}
+.dialog .exp{display:grid;gap:8px}
+.exp button{display:grid;grid-template-columns:1fr auto;text-align:left;gap:2px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 12px}
+.exp button:hover{border-color:var(--ink)}
+.exp small{color:var(--muted);grid-column:1}
+.exp .mono{grid-row:1/3;grid-column:2;align-self:center;font-size:11px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;z-index:30;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+
+@media (max-width:1100px){.studio{grid-template-columns:230px minmax(0,1fr) 270px}}
+@media (max-width:900px){
+  main{overflow:auto;display:block}
+  .view{display:flex;flex-direction:column;min-height:auto}
+  .studio .stage{order:-1;padding-block:16px}
+  .side,.side.r{border:0;border-top:1px solid var(--line);overflow:visible}
+  .board{width:100%}
+  .canvaswrap{min-height:60vh}
+  .comm{grid-template-columns:1fr}.profile{position:static}
+  .hero-mock{grid-template-columns:1fr}
+  .top{grid-template-columns:auto 1fr}.ask{grid-column:1/-1;grid-row:2}.tabs{grid-row:3}
+}
+@media (max-width:520px){.right .lbl{display:none}.word{font-size:21px}.brand small{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <button class="brand" data-go="studio" aria-label="MotifMe studio">
+      <svg width="34" height="34" viewBox="-50 -50 100 100" aria-hidden="true"><g fill="var(--accent)"><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(0)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(45)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(90)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(135)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(180)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(225)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(270)"/><path d="M0 -6 C-9 -14 -7 -40 0 -44 C7 -40 9 -14 0 -6Z" transform="rotate(315)"/></g><circle r="9" fill="var(--ink)"/></svg>
+      <span><span class="word"><b>Motif</b><i>Me</i></span><small>Motif &amp; print studio</small></span>
+    </button>
+    <form class="ask" id="askForm" autocomplete="off">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>
+      <input id="askInput" placeholder="Ask Mofi for a motif: dahlia block print, retro daisy, star tile…" aria-label="Describe a motif for Mofi to generate">
+      <button class="btn dark pill" id="askBtn" type="submit">Create</button>
+    </form>
+    <div class="right">
+      <button class="btn" data-go="board" title="Mood board"><svg width="15" height="15" viewBox="0 0 24 24" fill="var(--accent)" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span class="lbl">Pins</span><span class="count" id="pinCount">0</span></button>
+      <button class="btn dark" id="exportBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="lbl">Export</span></button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Workspace">
+      <button class="tab" role="tab" data-tab="studio"><span class="step">01</span>Motif Studio</button>
+      <button class="tab" role="tab" data-tab="repeat"><span class="step">02</span>Pattern Repeat</button>
+      <button class="tab" role="tab" data-tab="mock"><span class="step">03</span>Mockups</button>
+      <button class="tab" role="tab" data-tab="board">Mood Board</button>
+      <button class="tab" role="tab" data-tab="community">Community</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ STUDIO ============ -->
+    <section class="view studio" id="v-studio">
+      <aside class="side">
+        <div class="sec">
+          <h3><span id="palName">Palette</span><button class="btn sm ghost" id="recolorBtn" title="Spread this palette across every layer">Recolor all</button></h3>
+          <div class="swatches" id="swatches"></div>
+          <div class="tags" id="palTags"></div>
+          <label class="btn" for="palFile"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l2-3h4l2 3"/></svg>Extract palette from image</label>
+          <input type="file" id="palFile" accept="image/*" hidden>
+        </div>
+        <div class="sec">
+          <h3>Layers <span class="count" id="layerCount">0</span></h3>
+          <div class="layers" id="layers"></div>
+          <div class="row"><button class="btn sm" id="upBtn" title="Move up">↑ Up</button><button class="btn sm" id="downBtn" title="Move down">↓ Down</button><button class="btn sm" id="dupBtn">Duplicate</button><button class="btn sm" id="delBtn">Delete</button></div>
+        </div>
+        <div class="sec">
+          <h3>Add a shape</h3>
+          <div class="addmenu" id="addMenu"></div>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="toolbar" role="group" aria-label="Tool">
+          <button class="seg" id="toolSelect" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3l14 8-6 2-3 7z"/></svg>Shape &amp; inspect</button>
+          <button class="seg" id="toolDraw" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 21c3-1 5-3 7-6l8-8a2 2 0 0 0-3-3l-8 8c-3 2-5 4-4 9z"/></svg>Freehand draw</button>
+        </div>
+        <div class="board" id="board">
+          <svg id="boardSvg" viewBox="-250 -250 500 500" aria-label="Motif artboard"></svg>
+          <div class="symchip"><span class="mono" id="symLabel">12-fold radial</span><span id="snapLabel">Snap on</span></div>
+          <div class="chip mono" id="selChip"></div>
+          <div class="busy" id="busy" hidden><div class="spin"></div><span id="busyText">Mofi is sketching…</span></div>
+        </div>
+        <div class="zoom">
+          <button class="icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+          <button class="icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+          <button class="icon" id="guideBtn" aria-pressed="true" title="Symmetry guides" aria-label="Symmetry guides"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg></button>
+          <button class="icon" id="handlesBtn" aria-pressed="true" title="Edit handles" aria-label="Edit handles"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/></svg></button>
+          <button class="btn sm ghost" id="pinMotifBtn">Pin motif</button>
+          <button class="btn sm accent" data-go="repeat">Make it a repeat →</button>
+        </div>
+      </div>
+
+      <aside class="side r">
+        <div class="sec">
+          <h3>Mofi style assistant <button class="btn sm ghost" id="nextTip">Next tip ›</button></h3>
+          <div class="tip" id="tipBox"></div>
+        </div>
+        <div class="sec" id="drawPanel" hidden>
+          <h3>Freehand brush</h3>
+          <div class="field"><label>Mirror folds <output id="foldOut"></output></label><div class="counts" id="foldCounts"></div></div>
+          <div class="field"><label>Brush weight <output id="bwOut"></output></label><input type="range" id="bw" min="1" max="24" step="1"></div>
+          <div class="colorin"><input type="color" id="bc" aria-label="Brush color"><span>Brush color · tap a palette swatch too</span></div>
+          <label class="lab"><span>Mirror each stroke</span><input type="checkbox" id="bm"></label>
+          <label class="lab"><span>Fill closed shapes</span><input type="checkbox" id="bf"></label>
+          <div class="row"><button class="btn sm" id="undoStroke">Undo stroke</button><button class="btn sm" id="clearStrokes">Clear drawing</button></div>
+        </div>
+        <div class="sec" id="inspector"></div>
+      </aside>
+    </section>
+
+    <!-- ============ REPEAT ============ -->
+    <section class="view repeat" id="v-repeat" hidden>
+      <aside class="side">
+        <div class="sec">
+          <h3>Repeat layout</h3>
+          <div class="layouts" id="layoutBtns"></div>
+        </div>
+        <div class="sec">
+          <h3>Scale to size</h3>
+          <div class="two">
+            <div class="field"><span class="lab">Repeat tile</span><div class="unit"><input id="tileIn" type="number" min="0.5" max="36" step="0.25" aria-label="Repeat tile size"><span id="u1">in</span></div></div>
+            <div class="field"><span class="lab">Print res</span><select id="dpi" aria-label="Print resolution"><option value="150">150 dpi</option><option value="300">300 dpi</option></select></div>
+          </div>
+          <div class="two">
+            <div class="field"><span class="lab">Print width</span><div class="unit"><input id="printW" type="number" min="2" max="120" step="1" aria-label="Print width"><span>in</span></div></div>
+            <div class="field"><span class="lab">Print height</span><div class="unit"><input id="printH" type="number" min="2" max="120" step="1" aria-label="Print height"><span>in</span></div></div>
+          </div>
+          <div class="tags" id="presetSizes"></div>
+        </div>
+        <div class="sec">
+          <h3>Motif placement</h3>
+          <div class="field"><label>Motif size in tile <output id="scaleOut"></output></label><input type="range" id="rScale" min="0.2" max="1.3" step="0.01"></div>
+          <div class="field"><label>Rotate alternates <output id="altOut"></output></label><input type="range" id="rAlt" min="0" max="180" step="5"></div>
+          <div class="field"><span class="lab">Filler between motifs</span><select id="filler"><option value="none">None</option><option value="dot">Seed dots</option><option value="sprig">Mini sprig (motif at 30%)</option><option value="star">Little stars</option></select></div>
+        </div>
+        <div class="sec">
+          <h3>Ground</h3>
+          <div class="tags" id="groundBtns"></div>
+          <div class="colors">
+            <div class="colorin"><input type="color" id="bgc" aria-label="Background color"><span>Base</span></div>
+            <div class="colorin"><input type="color" id="gc" aria-label="Ground color"><span>Ground</span></div>
+          </div>
+          <div class="field"><label>Ground density <output id="gnOut"></output></label><input type="range" id="gn" min="1" max="12" step="1"></div>
+          <div class="field"><label>Stripe / check weight <output id="gwOut"></output></label><input type="range" id="gw" min="0.05" max="0.9" step="0.01"></div>
+        </div>
+        <div class="sec">
+          <h3>Material finish</h3>
+          <div class="tags" id="textureBtns"></div>
+        </div>
+      </aside>
+      <div class="preview">
+        <div class="pv-head">
+          <div>
+            <h2 id="pvTitle">Pattern repeat</h2>
+            <div class="spec" id="spec"></div>
+          </div>
+          <div class="row">
+            <button class="btn sm" id="tileGuideBtn" aria-pressed="true">Show tile</button>
+            <button class="btn sm" id="pinPatternBtn">Pin pattern</button>
+            <button class="btn sm" id="postBtn">Share to community</button>
+            <button class="btn sm accent" data-go="mock">See it on product →</button>
+          </div>
+        </div>
+        <div class="canvaswrap" id="pvWrap"><canvas id="pv"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ============ MOCKUPS ============ -->
+    <section class="view mock" id="v-mock" hidden>
+      <div class="mockstage" id="mockStage"></div>
+      <aside class="side r">
+        <div class="sec">
+          <h3>Live mockup</h3>
+          <p class="hint" style="display:block;margin:0">Every product is drawn at its real size, so your repeat shows at true scale. Change the tile size and watch the print grow or shrink.</p>
+          <div class="field"><label>Repeat tile <output id="mTileOut"></output></label><input type="range" id="mTile" min="1" max="18" step="0.25"></div>
+          <div class="field"><label>Print angle <output id="mRotOut"></output></label><input type="range" id="mRot" min="-45" max="45" step="1"></div>
+          <div class="field"><span class="lab">Trim and hardware</span><div class="colorin"><input type="color" id="mTrim" aria-label="Trim color"><span>Straps, handles, piping</span></div></div>
+          <label class="lab"><span>Fabric shading</span><input type="checkbox" id="mShade" checked></label>
+        </div>
+        <div class="sec">
+          <h3>Next</h3>
+          <button class="btn" id="postBtn2">Share to community</button>
+          <button class="btn dark" id="exportBtn2">Export print files</button>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ============ BOARD ============ -->
+    <section class="view page" id="v-board" hidden>
+      <div class="page-in">
+        <div class="ph">
+          <div><h1>Mood <i>board</i></h1><p>Pin references, swatches and your own prints in one place. Pull a palette from any pin straight into the studio.</p></div>
+          <div class="row" id="boardSync"></div>
+        </div>
+        <div class="drop" id="drop">
+          <div><b>Drop inspiration images here</b><div class="hint" style="display:block">JPG, PNG or WebP. Wallpaper scans, tiles, vintage textiles, runway shots.</div></div>
+          <label class="btn dark" for="pinFile">Upload images</label>
+          <input type="file" id="pinFile" accept="image/*" multiple hidden>
+        </div>
+        <div class="masonry" id="pins"></div>
+      </div>
+    </section>
+
+    <!-- ============ COMMUNITY ============ -->
+    <section class="view page" id="v-community" hidden>
+      <div class="page-in">
+        <div class="ph">
+          <div><h1>Print <i>community</i></h1><p>A showcase for surface designers. Post your repeats, appreciate other work, and remix any print into your own studio.</p></div>
+          <div class="filters" id="filters"></div>
+        </div>
+        <div class="comm">
+          <div class="profile" id="profile"></div>
+          <div style="display:grid;gap:18px;min-width:0">
+            <div class="feed" id="feed"></div>
+            <div style="display:grid;gap:10px">
+              <div class="ph"><div><h3 style="margin:0;font-size:15px">Starter prints</h3><p style="margin:0;font-size:13px">Made by the MotifMe team to remix. Open one and make it yours.</p></div></div>
+              <div class="feed" id="starter"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(() => {
+"use strict";
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2, 9);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
+const hexOk = h => typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const deep = o => JSON.parse(JSON.stringify(o));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("motifme:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("motifme:" + k, JSON.stringify(v)); } catch {} }
+};
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let s = seed || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+function lum(h) { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; }
+
+/* ================= data ================= */
+const PALETTES = [
+  { name: "Colorblock Stars", tags: ["Colorblock", "Retro"], colors: ["#F4EEE3", "#F48A98", "#4F5A2A", "#E6D876", "#A9662A", "#B94A3B", "#E9A2BC"] },
+  { name: "Block Print", tags: ["Heritage", "Two-tone"], colors: ["#FBFAF6", "#3F64B5", "#C8475E", "#E79AA6", "#6E8F5A", "#2B3A67", "#D8C8A8"] },
+  { name: "Tile Rouge", tags: ["Moody"], colors: ["#2A0F12", "#6E1A22", "#A8323A", "#D96D63", "#F0C9B6", "#3C4A2E", "#E8DCCB"] },
+  { name: "Riviera Stripe", tags: ["Playful", "Summer"], colors: ["#FFFFFF", "#E94E86", "#0F6E5C", "#F6B8CF", "#F2A541", "#1D3557", "#BFE3D9"] },
+  { name: "Safari Orange", tags: ["Bold"], colors: ["#F26A2E", "#121212", "#FAF7F2", "#C9B79C", "#7A5C3E", "#F4C7A8", "#2F4B3A"] },
+  { name: "Sage Ticking", tags: ["Quiet"], colors: ["#F3F1EA", "#8A9A72", "#4A5A3C", "#C9D3B5", "#B08968", "#E3D5C3", "#2E2B26"] }
+];
+const SHAPES = {
+  petal: { label: "Petals", icon: "M12 12C9 9 9 3 12 2c3 1 3 7 0 10z" },
+  leaf: { label: "Leaves", icon: "M12 12C7 9 8 3 12 2c4 1 5 7 0 10zM12 3v9" },
+  disc: { label: "Circle", icon: "M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16z" },
+  ring: { label: "Ring", icon: "M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16zm0 4a4 4 0 1 1 0 8a4 4 0 1 1 0-8z" },
+  dots: { label: "Dot ring", icon: "M12 3a1.6 1.6 0 1 0 0 3.2a1.6 1.6 0 1 0 0-3.2zM12 18a1.6 1.6 0 1 0 0 3.2a1.6 1.6 0 1 0 0-3.2zM3 12a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0zM18 12a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0z" },
+  scallop: { label: "Scallop", icon: "M12 3c2 0 2 2 4 2s2 2 3 3-1 3 0 4 1 3 0 4-3 1-3 3-2 2-4 2-2-2-4-2-2-2-3-3 1-3 0-4-1-3 0-4 3-1 3-3 2-2 4-2z" },
+  star: { label: "Star", icon: "M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z" },
+  heart: { label: "Hearts", icon: "M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z" },
+  diamond: { label: "Diamonds", icon: "M12 2l6 10-6 10-6-10z" },
+  triangle: { label: "Triangles", icon: "M12 3l9 17H3z" },
+  square: { label: "Squares", icon: "M5 5h14v14H5z" },
+  stripe: { label: "Rays", icon: "M11 2h2v20h-2zM2 11h20v2H2z" }
+};
+const PETAL_LIKE = ["petal", "leaf", "heart", "diamond", "triangle", "square", "stripe", "dots"];
+
+function L(type, o) {
+  const base = { id: uid(), type, name: SHAPES[type].label, visible: true, count: 8, r: 40, size: 100, width: 0.5, tip: 0.5, rot: 0, fill: "#E9668B", stroke: "none", sw: 1, opacity: 1 };
+  return Object.assign(base, o);
+}
+function sampleMotif() {
+  return {
+    name: "Dahlia Block",
+    layers: [
+      L("scallop", { name: "Scalloped halo", r: 168, size: 18, count: 12, fill: "#F7DCE3", stroke: "#E9A2BC", sw: 1.5 }),
+      L("leaf", { name: "Olive leaves", count: 6, r: 70, size: 130, width: 0.42, tip: 0.85, rot: 30, fill: "#4F5A2A", stroke: "none" }),
+      L("petal", { name: "Outer petals", count: 12, r: 36, size: 140, width: 0.55, tip: 0.3, rot: 15, fill: "#F48A98", stroke: "#B94A3B", sw: 1.5 }),
+      L("petal", { name: "Inner petals", count: 12, r: 28, size: 88, width: 0.5, tip: 0.65, rot: 0, fill: "#E9A2BC", stroke: "#B94A3B", sw: 1 }),
+      L("dots", { name: "Seed dots", count: 24, r: 50, size: 4, fill: "#E6D876" }),
+      L("disc", { name: "Center", size: 32, fill: "#2B2620" }),
+      L("ring", { name: "Center ring", size: 19, width: 0.25, fill: "#E6D876" })
+    ],
+    strokes: []
+  };
+}
+const DEFAULT_REPEAT = { layout: "halfdrop", tileIn: 4, dpi: 300, printW: 36, printH: 27, scale: 0.62, alt: 0, filler: "dot", ground: "stripe", bg: "#FFFFFF", g: "#6E8FD0", gn: 6, gw: 0.16, texture: "linen" };
+
+/* ================= state ================= */
+const saved = store.get("project", null);
+const S = {
+  tab: "studio",
+  motif: saved?.motif || sampleMotif(),
+  repeat: Object.assign({}, DEFAULT_REPEAT, saved?.repeat || {}),
+  palette: saved?.palette || deep(PALETTES[0]),
+  sel: null,
+  tool: "select",
+  brush: Object.assign({ color: "#2B2620", width: 5, fold: 12, mirror: true, fill: false }, saved?.brush || {}),
+  guides: true, handles: true,
+  mock: Object.assign({ item: "dress", rot: 0, trim: "#2B2620", shade: true }, saved?.mock || {}),
+  pins: store.get("pins", []),
+  tip: 0
+};
+S.sel = S.motif.layers[S.motif.layers.length - 3]?.id || S.motif.layers[0]?.id;
+let hist = [JSON.stringify(S.motif)], hpos = 0, histTimer = 0;
+function commit(immediate) {
+  clearTimeout(histTimer);
+  const go = () => {
+    const snap = JSON.stringify(S.motif);
+    if (snap === hist[hpos]) return;
+    hist = hist.slice(0, hpos + 1); hist.push(snap); if (hist.length > 80) hist.shift(); hpos = hist.length - 1;
+  };
+  immediate ? go() : (histTimer = setTimeout(go, 350));
+  persist();
+}
+function undo() { if (hpos > 0) { hpos--; S.motif = JSON.parse(hist[hpos]); fixSel(); renderStudio(); persist(); } }
+function redo() { if (hpos < hist.length - 1) { hpos++; S.motif = JSON.parse(hist[hpos]); fixSel(); renderStudio(); persist(); } }
+function fixSel() { if (!S.motif.layers.some(l => l.id === S.sel)) S.sel = S.motif.layers.at(-1)?.id || null; }
+let persistTimer = 0;
+function persist() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => store.set("project", { motif: S.motif, repeat: S.repeat, palette: S.palette, brush: S.brush, mock: S.mock }), 300);
+}
+const selLayer = () => S.motif.layers.find(l => l.id === S.sel);
+
+/* ================= motif geometry ================= */
+const f = n => Math.round(n * 100) / 100;
+function petalPath(len, w, t) {
+  const k = 1 - t;
+  return `M0 0C${f(-w)} ${f(-len * 0.3)} ${f(-w * k)} ${f(-len)} 0 ${f(-len)}C${f(w * k)} ${f(-len)} ${f(w)} ${f(-len * 0.3)} 0 0Z`;
+}
+function heartPath(s) {
+  return `M0 0C${f(-s * .1)} ${f(-s * .25)} ${f(-s * .55)} ${f(-s * .45)} ${f(-s * .5)} ${f(-s * .75)}C${f(-s * .45)} ${f(-s * 1.02)} ${f(-s * .08)} ${f(-s * 1.02)} 0 ${f(-s * .8)}C${f(s * .08)} ${f(-s * 1.02)} ${f(s * .45)} ${f(-s * 1.02)} ${f(s * .5)} ${f(-s * .75)}C${f(s * .55)} ${f(-s * .45)} ${f(s * .1)} ${f(-s * .25)} 0 0Z`;
+}
+function polar(r, deg) { const a = (deg - 90) * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; }
+function layerSVG(l) {
+  if (!l.visible) return "";
+  const st = l.stroke && l.stroke !== "none" ? ` stroke="${l.stroke}" stroke-width="${l.sw}" stroke-linejoin="round"` : "";
+  const op = l.opacity < 1 ? ` opacity="${l.opacity}"` : "";
+  const n = Math.max(1, Math.round(l.count)), step = 360 / n;
+  const rep = (inner) => { let o = ""; for (let i = 0; i < n; i++) o += `<g transform="rotate(${f(l.rot + i * step)}) translate(0 ${f(-l.r)})">${inner}</g>`; return o; };
+  let body = "";
+  switch (l.type) {
+    case "petal": body = rep(`<path d="${petalPath(l.size, l.size * l.width * 0.6, l.tip)}"/>`); break;
+    case "leaf": {
+      const d = petalPath(l.size, l.size * l.width * 0.45, l.tip);
+      const vein = `<path d="M0 ${f(-l.size * .08)}L0 ${f(-l.size * .85)}" fill="none" stroke="${l.stroke !== "none" ? l.stroke : "rgba(255,255,255,.55)"}" stroke-width="${Math.max(1, l.sw)}" stroke-linecap="round"/>`;
+      body = rep(`<path d="${d}"/>${vein}`); break;
+    }
+    case "disc": body = `<circle r="${f(l.size)}"/>`; break;
+    case "ring": return `<circle r="${f(l.size)}" fill="none" stroke="${l.fill}" stroke-width="${f(Math.max(1, l.width * l.size * 0.8))}"${op}/>`;
+    case "dots": body = rep(`<circle r="${f(l.size)}"/>`); break;
+    case "scallop": {
+      const pts = []; const N = 720;
+      for (let i = 0; i <= N; i++) {
+        const th = i / N * Math.PI * 2;
+        const rr = l.r + l.size * Math.pow(Math.abs(Math.cos(n * th / 2)), 0.55);
+        const a = th + l.rot * Math.PI / 180;
+        pts.push(`${f(rr * Math.sin(a))} ${f(-rr * Math.cos(a))}`);
+      }
+      body = `<path d="M${pts.join("L")}Z"/>`; break;
+    }
+    case "star": {
+      const outer = l.size, inner = l.size * (0.2 + 0.6 * l.width), pts = [];
+      for (let i = 0; i < n * 2; i++) { const [x, y] = polar(i % 2 ? inner : outer, l.rot + i * step / 2); pts.push(`${f(x)} ${f(y)}`); }
+      body = `<path d="M${pts.join("L")}Z"/>`; break;
+    }
+    case "heart": body = rep(`<path d="${heartPath(l.size)}"/>`); break;
+    case "diamond": { const w = l.size * l.width * 0.5; body = rep(`<path d="M0 0L${f(-w)} ${f(-l.size / 2)}L0 ${f(-l.size)}L${f(w)} ${f(-l.size / 2)}Z"/>`); break; }
+    case "triangle": { const w = l.size * l.width * 0.6; body = rep(`<path d="M${f(-w)} 0L${f(w)} 0L0 ${f(-l.size)}Z"/>`); break; }
+    case "square": { const s = l.size * (0.4 + l.width * 0.6); body = rep(`<rect x="${f(-s / 2)}" y="${f(-s)}" width="${f(s)}" height="${f(s)}" rx="${f(s * (1 - l.tip) * 0.3)}"/>`); break; }
+    case "stripe": { const w = Math.max(1, l.size * l.width * 0.12); body = rep(`<rect x="${f(-w / 2)}" y="${f(-l.size)}" width="${f(w)}" height="${f(l.size)}" rx="${f(w / 2 * (1 - l.tip))}"/>`); break; }
+  }
+  return `<g fill="${l.fill}"${st}${op}>${body}</g>`;
+}
+function strokePath(pts) {
+  if (pts.length < 2) return pts.length ? `M${pts[0][0]} ${pts[0][1]}l.1 0` : "";
+  let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+    d += `Q${f(pts[i][0])} ${f(pts[i][1])} ${f(mx)} ${f(my)}`;
+  }
+  const e = pts.at(-1); return d + `L${f(e[0])} ${f(e[1])}`;
+}
+function strokeSVG(s) {
+  const d = strokePath(s.pts), n = Math.max(1, s.fold); let o = "";
+  const fill = s.fill ? s.color : "none";
+  const attrs = `d="${d}" fill="${fill}" stroke="${s.color}" stroke-width="${s.width}" stroke-linecap="round" stroke-linejoin="round"`;
+  for (let i = 0; i < n; i++) {
+    const a = f(i * 360 / n);
+    o += `<path transform="rotate(${a})" ${attrs}/>`;
+    if (s.mirror) o += `<path transform="rotate(${a}) scale(-1 1)" ${attrs}/>`;
+  }
+  return o;
+}
+function motifInner(m) {
+  return m.layers.map(layerSVG).join("") + (m.strokesVisible === false ? "" : (m.strokes || []).map(strokeSVG).join(""));
+}
+function motifSVG(m, size = 1000) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="-250 -250 500 500">${motifInner(m)}</svg>`;
+}
+const imgCache = new Map();
+function motifImage(m) {
+  const svg = motifSVG(m, 1000);
+  if (imgCache.has(svg)) return imgCache.get(svg);
+  const p = new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im); im.onerror = rej;
+    im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  });
+  if (imgCache.size > 40) imgCache.delete(imgCache.keys().next().value);
+  imgCache.set(svg, p); return p;
+}
+
+/* ================= studio render ================= */
+const boardSvg = $("#boardSvg");
+function guidesSVG() {
+  if (!S.guides) return "";
+  const n = S.tool === "draw" ? S.brush.fold : (selLayer()?.count || 8);
+  let o = `<g stroke="var(--line)" stroke-width="1" fill="none">`;
+  for (const r of [60, 120, 180, 235]) o += `<circle r="${r}" stroke-dasharray="2 5"/>`;
+  const k = Math.min(48, Math.max(2, Math.round(n)));
+  for (let i = 0; i < k; i++) { const [x, y] = polar(240, i * 360 / k); o += `<line x1="0" y1="0" x2="${f(x)}" y2="${f(y)}" stroke-dasharray="2 5"/>`; }
+  return o + `</g>`;
+}
+function handleInfo(l) {
+  if (!l) return null;
+  if (["disc", "ring", "star"].includes(l.type)) return { kind: "radius", pos: polar(l.size, l.type === "star" ? l.rot : 0) };
+  if (l.type === "scallop") return { kind: "outer", pos: polar(l.r + l.size, l.rot) };
+  return { kind: "tip", pos: polar(l.r + l.size, l.rot) };
+}
+function handlesSVG() {
+  const l = selLayer();
+  if (!S.handles || S.tool !== "select" || !l || !l.visible) return "";
+  const h = handleInfo(l); if (!h) return "";
+  let o = "";
+  if (h.kind === "tip" || h.kind === "outer") {
+    const n = Math.max(1, Math.round(l.count));
+    for (let i = 1; i < n && i < 48; i++) { const [x, y] = polar(l.r + l.size, l.rot + i * 360 / n); o += `<circle cx="${f(x)}" cy="${f(y)}" r="4" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2" pointer-events="none"/><circle cx="${f(x)}" cy="${f(y)}" r="1.4" fill="var(--ink)" pointer-events="none"/>`; }
+    if (l.r > 2 && h.kind === "tip") { const [bx, by] = polar(l.r, l.rot); o += `<circle cx="${f(bx)}" cy="${f(by)}" r="5" fill="var(--surface)" stroke="var(--cobalt)" stroke-width="1.5" data-h="base" style="cursor:grab"/>`; }
+  }
+  const [x, y] = h.pos;
+  o += `<line x1="0" y1="0" x2="${f(x)}" y2="${f(y)}" stroke="var(--cobalt)" stroke-width="1" stroke-dasharray="3 3" pointer-events="none"/>`;
+  o += `<circle cx="${f(x)}" cy="${f(y)}" r="7" fill="var(--cobalt)" stroke="var(--surface)" stroke-width="2.5" data-h="main" style="cursor:grab"/>`;
+  return o;
+}
+let liveStroke = null;
+function drawBoard() {
+  boardSvg.innerHTML = guidesSVG() + motifInner(S.motif) + (liveStroke ? strokeSVG(liveStroke) : "") + handlesSVG();
+  const l = selLayer();
+  $("#selChip").innerHTML = S.tool === "draw"
+    ? `● Freehand · <b>${S.motif.strokes.length}</b> strokes · ${S.brush.fold}× fold`
+    : l ? `● <b>${esc(l.name)}</b> · R ${Math.round(l.r)}px · θ ${Math.round(l.rot)}° · size ${Math.round(l.size)}` : "No layer selected";
+  const n = S.tool === "draw" ? S.brush.fold : (l?.count || 1);
+  $("#symLabel").textContent = S.tool === "draw" ? `${n}-fold kaleidoscope${S.brush.mirror ? " + mirror" : ""}` : (["disc", "ring"].includes(l?.type) ? "Centered" : `${Math.round(n)}-fold radial`);
+  $("#snapLabel").textContent = S.tool === "draw" ? "Live symmetry" : "Snap on";
+}
+function renderPalette() {
+  $("#palName").textContent = "Palette: " + S.palette.name;
+  const sel = selLayer();
+  $("#swatches").innerHTML = S.palette.colors.map((c, i) => `<button class="sw${(S.tool === "draw" ? S.brush.color : sel?.fill)?.toLowerCase() === c.toLowerCase() ? " on" : ""}" style="background:${c}" data-c="${c}" title="${c}" aria-label="Use ${c}"></button>`).join("");
+  $("#palTags").innerHTML = PALETTES.map(p => `<button class="tagb" aria-pressed="${p.name === S.palette.name}" data-pal="${esc(p.name)}">${esc(p.name)}</button>`).join("");
+}
+function renderLayers() {
+  const ls = [...S.motif.layers].reverse();
+  $("#layerCount").textContent = S.motif.layers.length + (S.motif.strokes.length ? 1 : 0);
+  let html = "";
+  if (S.motif.strokes.length) {
+    html += `<div class="layer${S.motif.strokesVisible === false ? " off" : ""}" style="cursor:default"><span class="dot" style="background:${S.motif.strokes.at(-1).color}"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21c3-1 5-3 7-6l8-8a2 2 0 0 0-3-3l-8 8c-3 2-5 4-4 9z"/></svg><span class="nm">Freehand drawing<span class="ty">${S.motif.strokes.length} strokes</span></span><button class="eye" data-eye="strokes" aria-label="Toggle drawing visibility">${eyeIcon(S.motif.strokesVisible !== false)}</button></div>`;
+  }
+  html += ls.map(l => `<div class="layer${l.id === S.sel ? " on" : ""}${l.visible ? "" : " off"}" data-id="${l.id}" role="button" tabindex="0"><span class="dot" style="background:${l.fill}"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${SHAPES[l.type].icon}" fill-rule="evenodd"/></svg><span class="nm">${esc(l.name)}<span class="ty">${SHAPES[l.type].label}${PETAL_LIKE.includes(l.type) ? " · " + Math.round(l.count) + "×" : ""}</span></span><button class="eye" data-eye="${l.id}" aria-label="Toggle visibility">${eyeIcon(l.visible)}</button></div>`).join("");
+  $("#layers").innerHTML = html || `<p class="hint" style="display:block">No layers yet. Add a shape below or draw freehand.</p>`;
+}
+const eyeIcon = on => on
+  ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`
+  : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.2 3.9M6.3 6.3A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 4.2-1"/></svg>`;
+function renderAddMenu() {
+  $("#addMenu").innerHTML = Object.entries(SHAPES).map(([k, s]) => `<button data-add="${k}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${s.icon}" fill-rule="evenodd"/></svg>${s.label}</button>`).join("");
+}
+function slider(id, label, min, max, step, val, fmt, hints) {
+  return `<div class="field"><label for="${id}">${label}<output id="${id}-o">${fmt(val)}</output></label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">${hints ? `<div class="hint"><span>${hints[0]}</span><span>${hints[1]}</span></div>` : ""}</div>`;
+}
+function renderInspector() {
+  const l = selLayer(), box = $("#inspector");
+  if (!l) { box.innerHTML = `<h3>Inspector</h3><p class="hint" style="display:block">Select a layer to shape it.</p>`; return; }
+  const radial = PETAL_LIKE.includes(l.type) || ["scallop", "star"].includes(l.type);
+  const counts = [3, 4, 6, 8, 12, 16, 24];
+  const px = v => Math.round(v) + "px", deg = v => Math.round(v) + "°";
+  const tipW = { petal: ["Soft & curved", "Crisp & pointed"], leaf: ["Rounded", "Pointed"], square: ["Rounded", "Sharp"], stripe: ["Pill", "Square"] }[l.type];
+  const widthLabel = { star: "Star depth", ring: "Ring weight", scallop: "—" }[l.type] || "Fullness";
+  let h = `<h3>Visual shape dial <span class="mono" style="text-transform:none;letter-spacing:0;font-weight:400">${esc(SHAPES[l.type].label)}</span></h3>
+  <div class="field"><label for="lname">Layer name</label><input class="txt" id="lname" value="${esc(l.name)}"></div>
+  <div class="field"><span class="lab">Shape</span><select id="ltype">${Object.entries(SHAPES).map(([k, s]) => `<option value="${k}"${k === l.type ? " selected" : ""}>${s.label}</option>`).join("")}</select></div>`;
+  if (radial) h += `<div class="field"><span class="lab">${l.type === "star" ? "Points" : l.type === "scallop" ? "Scallops" : "Repeat count"} <output class="mono">${Math.round(l.count)}</output></span><div class="counts" style="grid-template-columns:repeat(7,1fr)">${counts.map(c => `<button data-count="${c}" aria-pressed="${Math.round(l.count) === c}">${c}</button>`).join("")}</div></div>`;
+  if (!["disc", "ring", "star"].includes(l.type)) h += slider("lr", l.type === "scallop" ? "Halo radius" : "Distance from center", 0, 220, 1, l.r, px);
+  h += slider("lsize", l.type === "scallop" ? "Scallop depth" : l.type === "dots" ? "Dot size" : ["disc", "ring", "star"].includes(l.type) ? "Radius" : "Length", l.type === "dots" ? 1 : 2, l.type === "dots" ? 30 : 240, 1, l.size, px);
+  if (!["disc", "scallop", "dots"].includes(l.type)) h += slider("lwidth", widthLabel, 0.05, 1, 0.01, l.width, v => Math.round(v * 100) + "%", l.type === "petal" ? ["Thin / slender", "Full / plump"] : null);
+  if (tipW) h += slider("ltip", "Tip shape", 0, 1, 0.01, l.tip, v => v < .33 ? "Soft" : v < .66 ? "Balanced" : "Crisp", tipW);
+  h += slider("lrot", "Rotation", -180, 180, 1, l.rot, deg);
+  h += `<div class="colors"><div class="colorin"><input type="color" id="lfill" value="${l.fill}" aria-label="Fill color"><span>Fill</span></div><div class="colorin"><input type="color" id="lstroke" value="${hexOk(l.stroke) ? l.stroke : "#000000"}" aria-label="Outline color"><span>Outline</span><input type="checkbox" id="lstrokeOn" ${hexOk(l.stroke) ? "checked" : ""} aria-label="Outline on" style="margin-left:auto"></div></div>`;
+  h += slider("lsw", "Outline weight", 0, 8, 0.25, l.sw, v => (+v).toFixed(2) + "pt");
+  h += slider("lop", "Opacity", 0.1, 1, 0.01, l.opacity, v => Math.round(v * 100) + "%");
+  box.innerHTML = h;
+}
+const TIPS = [
+  { t: "Rotational balance", d: "Offset this tier by half a step so its points sit between the tier below. It creates rhythm between filled and open space.", a: "Apply half-step offset", run: () => { const l = selLayer(); if (l) { l.rot = ((l.rot + 180 / Math.max(1, l.count) + 180) % 360) - 180; } } },
+  { t: "Anchor the center", d: "A dark center reads from across a room and keeps a busy motif from floating in the repeat.", a: "Darken the center", run: () => { const dark = [...S.palette.colors].sort((a, b) => lum(a) - lum(b))[0]; const c = [...S.motif.layers].reverse().find(l => l.type === "disc"); if (c) c.fill = dark; else S.motif.layers.push(L("disc", { name: "Center", size: 26, fill: dark })); } },
+  { t: "Two-tone discipline", d: "Block printers often carve two blocks only. Limiting to two inks makes a motif feel crafted and keeps print costs down.", a: "Reduce to two colors", run: () => { const sorted = [...S.palette.colors].sort((a, b) => lum(a) - lum(b)); const ink = sorted[1] || sorted[0], light = sorted.at(-2) || sorted.at(-1); S.motif.layers.forEach((l, i) => { l.fill = i % 2 ? light : ink; if (hexOk(l.stroke)) l.stroke = ink; }); } },
+  { t: "Odd counts feel organic", d: "Florals with 5 or 7 petals look hand-drawn. Even counts read as tiles and geometrics.", a: "Switch this tier to 5", run: () => { const l = selLayer(); if (l) l.count = 5; } },
+  { t: "Outline for print", d: "A thin outline in the darkest ink hides small registration shifts on screen-printed fabric.", a: "Outline every layer", run: () => { const dark = [...S.palette.colors].sort((a, b) => lum(a) - lum(b))[0]; S.motif.layers.forEach(l => { if (l.type !== "ring") { l.stroke = dark; l.sw = Math.max(1, l.sw); } }); } }
+];
+function renderTip() {
+  const t = TIPS[S.tip % TIPS.length];
+  $("#tipBox").innerHTML = `<b>✦ ${esc(t.t)}</b><p>${esc(t.d)}</p><button class="btn dark" id="tipRun">${esc(t.a)}</button>`;
+}
+function renderDrawPanel() {
+  $("#drawPanel").hidden = S.tool !== "draw";
+  $("#inspector").hidden = S.tool === "draw";
+  $("#foldCounts").innerHTML = [1, 2, 4, 6, 8, 12].map(c => `<button data-fold="${c}" aria-pressed="${S.brush.fold === c}">${c}</button>`).join("");
+  $("#foldOut").textContent = S.brush.fold + "×";
+  $("#bw").value = S.brush.width; $("#bwOut").textContent = S.brush.width + "px";
+  $("#bc").value = S.brush.color; $("#bm").checked = S.brush.mirror; $("#bf").checked = S.brush.fill;
+  $("#toolSelect").setAttribute("aria-pressed", S.tool === "select");
+  $("#toolDraw").setAttribute("aria-pressed", S.tool === "draw");
+  $("#board").classList.toggle("drawing", S.tool === "draw");
+}
+function renderStudio() { drawBoard(); renderPalette(); renderLayers(); renderInspector(); renderDrawPanel(); }
+
+/* ---- studio events ---- */
+$("#swatches").addEventListener("click", e => {
+  const c = e.target.closest("[data-c]")?.dataset.c; if (!c) return;
+  if (S.tool === "draw") { S.brush.color = c; renderDrawPanel(); renderPalette(); persist(); return; }
+  const l = selLayer(); if (!l) return; l.fill = c; commit(true); renderStudio();
+});
+$("#palTags").addEventListener("click", e => {
+  const n = e.target.closest("[data-pal]")?.dataset.pal; if (!n) return;
+  S.palette = deep(PALETTES.find(p => p.name === n)); renderPalette(); persist();
+});
+$("#recolorBtn").addEventListener("click", () => {
+  const cs = S.palette.colors.filter(c => lum(c) < 0.93), ls = S.motif.layers;
+  ls.forEach((l, i) => { l.fill = cs[(i * 3 + 1) % cs.length]; if (hexOk(l.stroke)) l.stroke = [...cs].sort((a, b) => lum(a) - lum(b))[0]; });
+  commit(true); renderStudio(); toast("Recolored with " + S.palette.name);
+});
+$("#layers").addEventListener("click", e => {
+  const eye = e.target.closest("[data-eye]");
+  if (eye) {
+    if (eye.dataset.eye === "strokes") S.motif.strokesVisible = S.motif.strokesVisible === false;
+    else { const l = S.motif.layers.find(x => x.id === eye.dataset.eye); l.visible = !l.visible; }
+    commit(true); renderStudio(); return;
+  }
+  const row = e.target.closest("[data-id]"); if (!row) return;
+  S.sel = row.dataset.id; if (S.tool === "draw") S.tool = "select"; renderStudio();
+});
+$("#layers").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset.id) { S.sel = e.target.dataset.id; renderStudio(); } });
+function moveSel(d) {
+  const ls = S.motif.layers, i = ls.findIndex(l => l.id === S.sel), j = i + d;
+  if (i < 0 || j < 0 || j >= ls.length) return; [ls[i], ls[j]] = [ls[j], ls[i]]; commit(true); renderStudio();
+}
+$("#upBtn").onclick = () => moveSel(1);
+$("#downBtn").onclick = () => moveSel(-1);
+$("#dupBtn").onclick = () => { const l = selLayer(); if (!l) return; const c = Object.assign(deep(l), { id: uid(), name: l.name + " copy", rot: l.rot + 180 / Math.max(1, l.count) }); S.motif.layers.splice(S.motif.layers.indexOf(l) + 1, 0, c); S.sel = c.id; commit(true); renderStudio(); };
+$("#delBtn").onclick = () => { const i = S.motif.layers.findIndex(l => l.id === S.sel); if (i < 0) return; S.motif.layers.splice(i, 1); fixSel(); commit(true); renderStudio(); };
+$("#addMenu").addEventListener("click", e => {
+  const t = e.target.closest("[data-add]")?.dataset.add; if (!t) return;
+  const cs = S.palette.colors.filter(c => lum(c) < .93);
+  const preset = { disc: { size: 30, count: 1 }, ring: { size: 60, width: .15, count: 1 }, dots: { count: 16, r: 120, size: 5 }, scallop: { r: 140, size: 16, count: 16 }, star: { size: 90, count: 8, width: .4 }, stripe: { count: 24, r: 40, size: 160, width: .4 }, square: { count: 8, r: 120, size: 30 } }[t] || {};
+  const l = L(t, Object.assign({ fill: cs[S.motif.layers.length % cs.length] || "#E9668B" }, preset));
+  S.motif.layers.push(l); S.sel = l.id; S.tool = "select"; commit(true); renderStudio();
+});
+const inspector = $("#inspector");
+inspector.addEventListener("input", e => {
+  const l = selLayer(); if (!l) return; const t = e.target, v = parseFloat(t.value);
+  const map = { lr: "r", lsize: "size", lwidth: "width", ltip: "tip", lrot: "rot", lsw: "sw", lop: "opacity" };
+  if (map[t.id]) { l[map[t.id]] = v; const o = $("#" + t.id + "-o"); if (o) o.textContent = t.id === "lr" || t.id === "lsize" ? Math.round(v) + "px" : t.id === "lrot" ? Math.round(v) + "°" : t.id === "lsw" ? v.toFixed(2) + "pt" : t.id === "ltip" ? (v < .33 ? "Soft" : v < .66 ? "Balanced" : "Crisp") : Math.round(v * 100) + "%"; }
+  else if (t.id === "lname") { l.name = t.value; renderLayers(); }
+  else if (t.id === "lfill") l.fill = t.value;
+  else if (t.id === "lstroke") { l.stroke = t.value; $("#lstrokeOn").checked = true; }
+  drawBoard(); commit();
+});
+inspector.addEventListener("change", e => {
+  const l = selLayer(); if (!l) return;
+  if (e.target.id === "ltype") { l.type = e.target.value; if (["disc", "ring", "star"].includes(l.type)) l.size = Math.min(l.size, 120); commit(true); renderStudio(); }
+  if (e.target.id === "lstrokeOn") { l.stroke = e.target.checked ? $("#lstroke").value : "none"; commit(true); drawBoard(); }
+  if (e.target.id === "lfill") { renderLayers(); renderPalette(); }
+});
+inspector.addEventListener("click", e => {
+  const c = e.target.closest("[data-count]"); if (!c) return;
+  selLayer().count = +c.dataset.count; commit(true); renderStudio();
+});
+$("#toolSelect").onclick = () => { S.tool = "select"; renderStudio(); };
+$("#toolDraw").onclick = () => { S.tool = "draw"; renderStudio(); };
+$("#foldCounts").addEventListener("click", e => { const b = e.target.closest("[data-fold]"); if (!b) return; S.brush.fold = +b.dataset.fold; renderDrawPanel(); drawBoard(); persist(); });
+$("#bw").oninput = e => { S.brush.width = +e.target.value; $("#bwOut").textContent = S.brush.width + "px"; persist(); };
+$("#bc").oninput = e => { S.brush.color = e.target.value; persist(); };
+$("#bm").onchange = e => { S.brush.mirror = e.target.checked; drawBoard(); persist(); };
+$("#bf").onchange = e => { S.brush.fill = e.target.checked; persist(); };
+$("#undoStroke").onclick = () => { S.motif.strokes.pop(); commit(true); renderStudio(); };
+$("#clearStrokes").onclick = () => { S.motif.strokes = []; commit(true); renderStudio(); };
+$("#undoBtn").onclick = undo; $("#redoBtn").onclick = redo;
+$("#guideBtn").onclick = e => { S.guides = !S.guides; e.currentTarget.setAttribute("aria-pressed", S.guides); drawBoard(); };
+$("#handlesBtn").onclick = e => { S.handles = !S.handles; e.currentTarget.setAttribute("aria-pressed", S.handles); drawBoard(); };
+$("#nextTip").onclick = () => { S.tip++; renderTip(); };
+$("#tipBox").addEventListener("click", e => { if (e.target.id !== "tipRun") return; TIPS[S.tip % TIPS.length].run(); commit(true); renderStudio(); toast("Applied: " + TIPS[S.tip % TIPS.length].t); });
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea,select")) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  if (S.tab === "studio" && (e.key === "Delete" || e.key === "Backspace") && S.tool === "select") { $("#delBtn").click(); }
+  if (e.key === "b" && S.tab === "studio") $("#toolDraw").click();
+  if (e.key === "v" && S.tab === "studio") $("#toolSelect").click();
+});
+
+/* ---- board pointer: handles + freehand ---- */
+function svgPt(e) {
+  const pt = boardSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(boardSvg.getScreenCTM().inverse()); return [p.x, p.y];
+}
+let drag = null;
+boardSvg.addEventListener("pointerdown", e => {
+  if (S.tool === "draw") {
+    boardSvg.setPointerCapture(e.pointerId);
+    liveStroke = { pts: [svgPt(e)], color: S.brush.color, width: S.brush.width, fold: S.brush.fold, mirror: S.brush.mirror, fill: S.brush.fill };
+    drawBoard(); return;
+  }
+  const h = e.target.dataset?.h;
+  if (h) { boardSvg.setPointerCapture(e.pointerId); drag = h; e.preventDefault(); }
+});
+boardSvg.addEventListener("pointermove", e => {
+  if (liveStroke) {
+    const p = svgPt(e), last = liveStroke.pts.at(-1);
+    if (Math.hypot(p[0] - last[0], p[1] - last[1]) > 2.5) { liveStroke.pts.push([f(p[0]), f(p[1])]); drawBoard(); }
+    return;
+  }
+  if (!drag) return;
+  const l = selLayer(); if (!l) return;
+  const [x, y] = svgPt(e), dist = Math.hypot(x, y);
+  let ang = Math.atan2(y, x) * 180 / Math.PI + 90; if (ang > 180) ang -= 360;
+  if (!e.shiftKey) ang = Math.round(ang / 5) * 5;
+  const hi = handleInfo(l);
+  if (drag === "base") l.r = clamp(Math.round(dist), 0, 230);
+  else if (hi.kind === "radius") { l.size = clamp(Math.round(dist), 2, 240); if (l.type === "star") l.rot = ang; }
+  else if (hi.kind === "outer") { l.size = clamp(Math.round(dist - l.r), 2, 80); l.rot = ang; }
+  else { l.size = clamp(Math.round(dist - l.r), 2, 240); l.rot = ang; }
+  drawBoard();
+});
+function endPointer() {
+  if (liveStroke) {
+    if (liveStroke.pts.length > 1) S.motif.strokes.push(liveStroke);
+    liveStroke = null; commit(true); renderStudio(); return;
+  }
+  if (drag) { drag = null; commit(true); renderInspector(); }
+}
+boardSvg.addEventListener("pointerup", endPointer);
+boardSvg.addEventListener("pointercancel", endPointer);
+
+/* ---- palette extraction ---- */
+function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
+function extractPalette(img, k = 7) {
+  const c = document.createElement("canvas"), s = 72; c.width = c.height = s;
+  const x = c.getContext("2d"); x.drawImage(img, 0, 0, s, s);
+  let data; try { data = x.getImageData(0, 0, s, s).data; } catch { return null; }
+  const px = []; for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 128) px.push([data[i], data[i + 1], data[i + 2]]);
+  const r = rng(7); let cents = Array.from({ length: k }, () => px[Math.floor(r() * px.length)].slice());
+  for (let it = 0; it < 10; it++) {
+    const sums = cents.map(() => [0, 0, 0, 0]);
+    for (const p of px) { let bi = 0, bd = 1e9; cents.forEach((c, i) => { const d = (p[0] - c[0]) ** 2 + (p[1] - c[1]) ** 2 + (p[2] - c[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); const sm = sums[bi]; sm[0] += p[0]; sm[1] += p[1]; sm[2] += p[2]; sm[3]++; }
+    cents = cents.map((c, i) => sums[i][3] ? [sums[i][0] / sums[i][3], sums[i][1] / sums[i][3], sums[i][2] / sums[i][3]] : c);
+  }
+  const hex = c => "#" + c.map(v => Math.round(v).toString(16).padStart(2, "0")).join("");
+  return [...new Set(cents.sort((a, b) => (b[0] + b[1] + b[2]) - (a[0] + a[1] + a[2])).map(hex))];
+}
+function fileToDataURL(file, max = 1100) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const sc = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      res({ dataURL: c.toDataURL("image/jpeg", 0.86), canvas: c, w: c.width, h: c.height });
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error("That file could not be read as an image.")); };
+    im.src = url;
+  });
+}
+function applyExtracted(colors, name) {
+  if (!colors?.length) { toast("Couldn't read colors from that image."); return; }
+  S.palette = { name, tags: [], colors: colors.slice(0, 7) }; renderPalette(); persist(); toast("New palette: " + name);
+}
+$("#palFile").onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  try { const r = await fileToDataURL(file, 400); applyExtracted(extractPalette(r.canvas), "From " + file.name.replace(/\.[^.]+$/, "").slice(0, 18)); }
+  catch (err) { toast(err.message); }
+};
+
+/* ================= Ask Mofi (generative) ================= */
+let SAMPLE = null;
+const TYPES = Object.keys(SHAPES);
+function sanitizeAI(o) {
+  if (!o || !Array.isArray(o.layers)) throw new Error("bad");
+  const pal = (o.palette || []).filter(hexOk).slice(0, 7);
+  const layers = o.layers.slice(0, 9).map((l, i) => L(TYPES.includes(l.type) ? l.type : "petal", {
+    name: typeof l.name === "string" ? l.name.slice(0, 28) : SHAPES[TYPES.includes(l.type) ? l.type : "petal"].label,
+    count: clamp(Math.round(num(l.count, 8)), 1, 32), r: clamp(num(l.r, 30), 0, 220), size: clamp(num(l.size, 80), 1, 240),
+    width: clamp(num(l.width, .5), .05, 1), tip: clamp(num(l.tip, .5), 0, 1), rot: clamp(num(l.rot, 0), -360, 360),
+    fill: hexOk(l.fill) ? l.fill : (pal[i % (pal.length || 1)] || "#E9668B"), stroke: hexOk(l.stroke) ? l.stroke : "none",
+    sw: clamp(num(l.sw, 1), 0, 8), opacity: clamp(num(l.opacity, 1), .1, 1)
+  }));
+  if (!layers.length) throw new Error("empty");
+  const rp = o.repeat || {};
+  return {
+    motif: { name: String(o.name || "Untitled motif").slice(0, 40), layers, strokes: [] },
+    palette: pal.length >= 3 ? { name: String(o.name || "Mofi").slice(0, 24), tags: [], colors: pal } : null,
+    repeat: {
+      layout: ["grid", "halfdrop", "brick", "mirror", "toss"].includes(rp.layout) ? rp.layout : undefined,
+      ground: ["none", "stripe", "gingham", "check", "ticking", "dots"].includes(rp.ground) ? rp.ground : undefined,
+      g: hexOk(rp.groundColor) ? rp.groundColor : undefined, bg: hexOk(o.background) ? o.background : undefined,
+      scale: rp.scale ? clamp(num(rp.scale, .6), .25, 1.2) : undefined
+    },
+    note: typeof o.tip === "string" ? o.tip.slice(0, 200) : ""
+  };
+}
+function localMotif(prompt) {
+  const p = prompt.toLowerCase(), r = rng(hash(p) || 3);
+  const pal = PALETTES[hash(p) % PALETTES.length].colors, pick = () => pal[1 + Math.floor(r() * (pal.length - 1))];
+  const dark = [...pal].sort((a, b) => lum(a) - lum(b))[0];
+  const ls = [];
+  const has = (...w) => w.some(x => p.includes(x));
+  if (has("star", "celestial", "sun")) {
+    ls.push(L("stripe", { name: "Sun rays", count: 24, r: 70, size: 150, width: .35, tip: .2, fill: pick() }));
+    ls.push(L("star", { name: "Star", count: has("sun") ? 12 : 5, size: 110, width: .35, fill: pick(), stroke: dark, sw: 1.5 }));
+    ls.push(L("disc", { name: "Core", size: 26, fill: dark }));
+  } else if (has("heart", "love")) {
+    ls.push(L("heart", { name: "Heart ring", count: 6, r: 40, size: 110, fill: pick(), stroke: dark, sw: 1 }));
+    ls.push(L("dots", { name: "Dots", count: 12, r: 170, size: 7, fill: pick() }));
+    ls.push(L("heart", { name: "Mini hearts", count: 6, r: 20, size: 40, rot: 30, fill: pick() }));
+  } else if (has("tile", "geometric", "deco", "art deco", "mosaic")) {
+    ls.push(L("square", { name: "Tile frame", count: 4, r: 150, size: 60, width: .8, tip: .9, rot: 45, fill: pick() }));
+    ls.push(L("diamond", { name: "Diamonds", count: 8, r: 30, size: 150, width: .4, fill: pick(), stroke: dark, sw: 1 }));
+    ls.push(L("ring", { name: "Ring", size: 70, width: .12, fill: dark }));
+    ls.push(L("disc", { name: "Core", size: 20, fill: pick() }));
+  } else {
+    const petals = has("daisy") ? 16 : has("dahlia", "chrysanthemum", "mum") ? 18 : has("poppy", "rose") ? 5 : has("lotus") ? 8 : 6 + Math.floor(r() * 4) * 2;
+    if (has("leaf", "vine", "botanical", "block", "sprig", "chintz") || r() > .5) ls.push(L("leaf", { name: "Leaves", count: Math.max(4, Math.round(petals / 2)), r: 60, size: 140, width: .4, tip: .9, rot: 180 / petals, fill: pal.find(c => lum(c) < .5) || pick() }));
+    ls.push(L("petal", { name: "Outer petals", count: petals, r: 30, size: 140 - petals * 2, width: has("daisy") ? .35 : .6, tip: has("dahlia") ? .7 : has("poppy", "rose") ? .05 : .35, fill: pick(), stroke: dark, sw: 1.2 }));
+    if (petals > 5) ls.push(L("petal", { name: "Inner petals", count: petals, r: 22, size: 70, width: .5, tip: .5, rot: 180 / petals, fill: pick() }));
+    ls.push(L("dots", { name: "Seed dots", count: 12, r: 34, size: 4, fill: pick() }));
+    ls.push(L("disc", { name: "Center", size: 22, fill: dark }));
+  }
+  return { motif: { name: prompt.replace(/\b\w/g, c => c.toUpperCase()).slice(0, 40), layers: ls, strokes: [] }, palette: { name: PALETTES[hash(p) % PALETTES.length].name, tags: [], colors: pal }, repeat: {}, note: "Made offline from your keywords. Tweak any layer in the inspector." };
+}
+const PROMPT = (q, pal) => `You are Mofi, a textile print designer inside a vector motif app. Design ONE radially symmetric motif for a fashion print from this request: "${q}".
+The artboard is a 500x500 canvas centered at 0,0; keep everything within radius 230. Layers are drawn in order (first = back).
+Return JSON only, with this exact shape:
+{"name": string (2-4 words), "palette": [5-7 hex colors], "background": hex,
+ "layers": [ {"name": string, "type": one of ${TYPES.join("|")}, "count": 1-24 (copies rotated around the center), "r": 0-200 (distance from center to the shape's base), "size": length or radius in px (dots 2-14), "width": 0.05-1 (fullness), "tip": 0-1 (0 rounded, 1 pointed), "rot": degrees, "fill": hex, "stroke": hex or "none", "sw": 0-4, "opacity": 0.3-1 } ] (4-8 layers),
+ "repeat": {"layout": "grid|halfdrop|brick|mirror|toss", "ground": "none|stripe|gingham|check|ticking|dots", "groundColor": hex, "scale": 0.4-1},
+ "tip": one sentence of design advice about this motif}
+Shape notes: petal = teardrop petal pointing outward; leaf = slim leaf with a vein; disc = filled circle of radius size at the center; ring = circle outline at the center; dots = small circles at radius r; scallop = wavy halo with outer radius r+size; star = star at center with count points; stripe = thin rays.
+Make it feel like real surface design (block print, chintz, retro, folk, tile). Current palette for reference: ${pal.join(", ")}.`;
+$("#askForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = $("#askInput").value.trim();
+  if (!q) { $("#askInput").focus(); toast("Describe a motif first, like 'indigo block-print marigold'."); return; }
+  go("studio");
+  const btn = $("#askBtn"); btn.disabled = true; $("#busy").hidden = false; $("#busyText").textContent = "Mofi is sketching…";
+  let res = null, offline = false;
+  try {
+    if (!SAMPLE) throw { code: "none" };
+    $("#busyText").textContent = "Mofi is sketching… this takes a few seconds";
+    res = sanitizeAI(await SAMPLE.json(PROMPT(q, S.palette.colors), { modelTier: "default" }));
+  } catch (err) {
+    offline = true; res = localMotif(q);
+    if (err?.code === "not_granted") toast("Claude access was declined, so Mofi made it offline.");
+    else if (err?.code === "rate_limited") toast("Mofi is busy. Made an offline version for now.");
+  }
+  S.motif = res.motif; if (res.palette) S.palette = res.palette;
+  Object.entries(res.repeat || {}).forEach(([k, v]) => { if (v !== undefined) S.repeat[k] = v; });
+  S.sel = S.motif.layers.at(-2)?.id || S.motif.layers[0].id; S.tool = "select";
+  commit(true); renderStudio();
+  if (res.note) $("#tipBox").innerHTML = `<b>✦ Mofi on “${esc(S.motif.name)}”</b><p>${esc(res.note)}</p><button class="btn dark" id="tipRun">${esc(TIPS[S.tip % TIPS.length].a)}</button>`;
+  $("#busy").hidden = true; btn.disabled = false;
+  if (!offline) toast("Mofi made “" + S.motif.name + "”");
+});
+
+/* ================= repeat engine ================= */
+const LAYOUTS = {
+  grid: { label: "Straight", d: "M4 4h8v8H4zM20 4h8v8h-8zM4 16h8v8H4zM20 16h8v8h-8z" },
+  halfdrop: { label: "Half-drop", d: "M4 2h8v8H4zM20 8h8v8h-8zM4 16h8v8H4zM20 22h8v4h-8z" },
+  brick: { label: "Brick", d: "M2 4h8v8H2zM18 4h8v8h-8zM10 16h8v8h-8zM26 16h8v8h-8z" },
+  mirror: { label: "Mirror", d: "M4 4h8l-8 8zM28 4h-8l8 8zM4 16h8l-8 8zM28 16h-8l8 8z" },
+  toss: { label: "Tossed", d: "M5 5h7v7H5zM21 3h6v6h-6zM14 15h7v7h-7zM28 19h5v5h-5zM3 20h6v6H3z" },
+  single: { label: "Placement", d: "M10 6h16v16H10z" }
+};
+const GROUNDS = { none: "Plain", stripe: "Stripe", ticking: "Ticking", gingham: "Gingham", check: "Check", dots: "Polka" };
+const TEXTURES = { none: "Flat digital", linen: "Linen", paper: "Paper", silk: "Silk sheen" };
+function placements(R, T) {
+  const P = [], s = T * R.scale;
+  const lay = R.layout;
+  if (lay === "toss") {
+    const r = rng(hash(JSON.stringify(S.motif.name || "") + R.scale) || 9);
+    const n = 6;
+    for (let i = 0; i < n; i++) P.push({ x: (i % 3 + .2 + r() * .6) * (2 * T / 3), y: (Math.floor(i / 3) + .2 + r() * .6) * T, rot: r() * 360, s: s * (.7 + r() * .35), flip: false });
+    return P;
+  }
+  if (lay === "single") { P.push({ x: T, y: T, rot: 0, s: s * 1.8, flip: false }); return P; }
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    let x = (i + .5) * T, y = (j + .5) * T;
+    if (lay === "halfdrop" && i % 2) y += T / 2;
+    if (lay === "brick" && j % 2) x += T / 2;
+    P.push({ x, y, rot: ((i + j) % 2) * R.alt, s, flip: lay === "mirror" && i % 2 === 1 });
+  }
+  return P;
+}
+function fillerPlaces(R, T) {
+  const P = [];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    let x = i * T, y = j * T;
+    if (R.layout === "halfdrop" && i % 2) y += T / 2;
+    if (R.layout === "brick" && j % 2) x += T / 2;
+    P.push({ x, y });
+  }
+  return P;
+}
+function drawGround(x, U, T, R) {
+  x.fillStyle = R.bg; x.fillRect(0, 0, U, U);
+  const n = Math.max(1, Math.round(R.gn)), p = T / n, w = p * R.gw;
+  x.fillStyle = R.g;
+  switch (R.ground) {
+    case "stripe": for (let k = 0; k < 2 * n; k++) x.fillRect(k * p + (p - w) / 2, 0, w, U); break;
+    case "ticking": for (let k = 0; k < 2 * n; k++) { const t = Math.max(1, w * .25); x.fillRect(k * p + p / 2 - w / 2, 0, t, U); x.fillRect(k * p + p / 2 + w / 2 - t, 0, t, U); } break;
+    case "gingham": x.globalAlpha = .5; for (let k = 0; k < 2 * n; k++) { x.fillRect(k * p, 0, p * R.gw * 1.2, U); x.fillRect(0, k * p, U, p * R.gw * 1.2); } x.globalAlpha = 1; break;
+    case "check": for (let a = 0; a < 2 * n; a++) for (let b = 0; b < 2 * n; b++) if ((a + b) % 2) x.fillRect(a * p, b * p, p, p); break;
+    case "dots": for (let a = 0; a < 2 * n; a++) for (let b = 0; b < 2 * n; b++) { x.beginPath(); x.arc(a * p + (b % 2 ? p / 2 : 0), b * p + p / 2, Math.max(1, w * .6), 0, 7); x.fill(); } break;
+  }
+}
+function wrapDraw(x, U, cx, cy, sz, fn) {
+  for (const dx of [-U, 0, U]) for (const dy of [-U, 0, U]) {
+    const px = cx + dx, py = cy + dy;
+    if (px + sz < 0 || py + sz < 0 || px - sz > U || py - sz > U) continue;
+    fn(px, py);
+  }
+}
+let textureCache = {};
+function texture(kind) {
+  if (textureCache[kind]) return textureCache[kind];
+  const c = document.createElement("canvas"), s = 160; c.width = c.height = s; const x = c.getContext("2d");
+  const r = rng(kind.length * 99);
+  x.fillStyle = "#fff"; x.fillRect(0, 0, s, s);
+  if (kind === "linen") {
+    for (let i = 0; i < s; i++) { x.fillStyle = `rgba(60,50,40,${.04 + r() * .08})`; x.fillRect(0, i, s, 1); x.fillStyle = `rgba(60,50,40,${.03 + r() * .07})`; x.fillRect(i, 0, 1, s); }
+    for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(60,50,40,${.08 + r() * .1})`; x.fillRect(r() * s, r() * s, 6 + r() * 20, 1); }
+  } else if (kind === "paper") {
+    const im = x.getImageData(0, 0, s, s); for (let i = 0; i < im.data.length; i += 4) { const v = 255 - r() * 26; im.data[i] = v; im.data[i + 1] = v - 2; im.data[i + 2] = v - 6; } x.putImageData(im, 0, 0);
+  } else if (kind === "silk") {
+    const g = x.createLinearGradient(0, 0, s, s); g.addColorStop(0, "#fff"); g.addColorStop(.5, "#ececec"); g.addColorStop(1, "#fff"); x.fillStyle = g; x.fillRect(0, 0, s, s);
+  }
+  return (textureCache[kind] = c);
+}
+async function buildTile(R, pxPerIn, motif = S.motif) {
+  const T = Math.max(8, Math.round(R.tileIn * pxPerIn)), U = 2 * T;
+  const c = document.createElement("canvas"); c.width = c.height = U; const x = c.getContext("2d");
+  drawGround(x, U, T, R);
+  const img = await motifImage(motif);
+  if (R.filler !== "none") {
+    const fs = T * R.scale * .3;
+    let fimg = null; if (R.filler === "sprig") fimg = img;
+    for (const p of fillerPlaces(R, T)) wrapDraw(x, U, p.x, p.y, fs, (px, py) => {
+      if (fimg) x.drawImage(fimg, px - fs / 2, py - fs / 2, fs, fs);
+      else if (R.filler === "dot") { x.fillStyle = motif.layers.at(-1)?.fill || R.g; x.beginPath(); x.arc(px, py, fs * .12, 0, 7); x.fill(); }
+      else { x.fillStyle = motif.layers[1]?.fill || R.g; x.beginPath(); for (let i = 0; i < 10; i++) { const rr = i % 2 ? fs * .1 : fs * .25, a = i * Math.PI / 5 - Math.PI / 2; x.lineTo(px + rr * Math.cos(a), py + rr * Math.sin(a)); } x.fill(); }
+    });
+  }
+  for (const p of placements(R, T)) wrapDraw(x, U, p.x, p.y, p.s / 2 * 1.42, (px, py) => {
+    x.save(); x.translate(px, py); x.rotate(p.rot * Math.PI / 180); if (p.flip) x.scale(-1, 1);
+    x.drawImage(img, -p.s / 2, -p.s / 2, p.s, p.s); x.restore();
+  });
+  if (R.texture !== "none") {
+    x.save(); x.globalCompositeOperation = "multiply"; x.globalAlpha = R.texture === "silk" ? .5 : .8;
+    x.fillStyle = x.createPattern(texture(R.texture), "repeat"); x.fillRect(0, 0, U, U); x.restore();
+  }
+  return { canvas: c, T, U };
+}
+function renderRepeatControls() {
+  const R = S.repeat;
+  $("#layoutBtns").innerHTML = Object.entries(LAYOUTS).map(([k, v]) => `<button data-lay="${k}" aria-pressed="${R.layout === k}"><svg viewBox="0 0 36 28" fill="currentColor" aria-hidden="true"><path d="${v.d}"/></svg>${v.label}</button>`).join("");
+  $("#groundBtns").innerHTML = Object.entries(GROUNDS).map(([k, v]) => `<button class="tagb" data-ground="${k}" aria-pressed="${R.ground === k}">${v}</button>`).join("");
+  $("#textureBtns").innerHTML = Object.entries(TEXTURES).map(([k, v]) => `<button class="tagb" data-tex="${k}" aria-pressed="${R.texture === k}">${v}</button>`).join("");
+  $("#presetSizes").innerHTML = [["Swatch 8×8", 8, 8], ["Fat quarter 18×22", 22, 18], ["Scarf 35×35", 35, 35], ["1 yd · 54in", 54, 36], ["Wallpaper 21×33", 21, 33]].map(([n, w, h]) => `<button class="tagb" data-size="${w},${h}" aria-pressed="${R.printW === w && R.printH === h}">${n}</button>`).join("");
+  $("#tileIn").value = R.tileIn; $("#dpi").value = R.dpi; $("#printW").value = R.printW; $("#printH").value = R.printH;
+  $("#rScale").value = R.scale; $("#scaleOut").textContent = Math.round(R.scale * 100) + "%";
+  $("#rAlt").value = R.alt; $("#altOut").textContent = R.alt + "°";
+  $("#filler").value = R.filler;
+  $("#bgc").value = R.bg; $("#gc").value = R.g;
+  $("#gn").value = R.gn; $("#gnOut").textContent = R.gn + " per tile";
+  $("#gw").value = R.gw; $("#gwOut").textContent = Math.round(R.gw * 100) + "%";
+  const px = Math.round(R.tileIn * R.dpi);
+  $("#pvTitle").textContent = S.motif.name + " · " + LAYOUTS[R.layout].label;
+  $("#spec").innerHTML = `<span>Tile <b>${R.tileIn}″ × ${R.tileIn}″</b></span><span>Repeat unit <b>${px * 2} px</b> @ ${R.dpi} dpi</span><span>Print <b>${R.printW}″ × ${R.printH}″</b> (${(R.printW * 2.54).toFixed(0)} × ${(R.printH * 2.54).toFixed(0)} cm)</span><span>Repeats across <b>${(R.printW / R.tileIn).toFixed(1)}</b></span>`;
+}
+let pvTimer = 0, pvToken = 0, showTile = true;
+function scheduleRepeat() { clearTimeout(pvTimer); pvTimer = setTimeout(drawRepeat, 60); }
+async function drawRepeat() {
+  const tok = ++pvToken, R = S.repeat, wrap = $("#pvWrap"), cv = $("#pv");
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = wrap.clientWidth, H = wrap.clientHeight;
+  if (!W || !H) return;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ruler = 22;
+  const ppi = Math.min((W - ruler - 8) / R.printW, (H - ruler - 8) / R.printH);
+  const { canvas, U } = await buildTile(R, ppi * dpr);
+  if (tok !== pvToken) return;
+  const x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const css = getComputedStyle(document.documentElement);
+  x.fillStyle = css.getPropertyValue("--soft"); x.fillRect(0, 0, W, H);
+  const pw = R.printW * ppi, ph = R.printH * ppi, ox = ruler, oy = ruler;
+  x.save(); x.translate(ox, oy); x.scale(1 / dpr, 1 / dpr);
+  x.fillStyle = x.createPattern(canvas, "repeat"); x.fillRect(0, 0, pw * dpr, ph * dpr); x.restore();
+  if (showTile) {
+    const t = U / dpr;
+    x.save(); x.strokeStyle = css.getPropertyValue("--cobalt"); x.lineWidth = 1.5; x.setLineDash([5, 4]);
+    x.strokeRect(ox + .5, oy + .5, t, t); x.fillStyle = css.getPropertyValue("--cobalt"); x.font = "500 11px IBM Plex Mono, monospace";
+    const label = `repeat unit ${R.tileIn * 2}″`; const tw = x.measureText(label).width + 10;
+    x.fillRect(ox, oy + t - 18, tw, 18); x.fillStyle = "#fff"; x.fillText(label, ox + 5, oy + t - 5); x.restore();
+  }
+  // rulers in inches
+  x.fillStyle = css.getPropertyValue("--muted"); x.strokeStyle = css.getPropertyValue("--muted"); x.font = "10px IBM Plex Mono, monospace"; x.lineWidth = 1;
+  const stepIn = ppi > 30 ? 1 : ppi > 12 ? 2 : ppi > 6 ? 4 : 6;
+  for (let i = 0; i <= R.printW; i += stepIn) { const px = ox + i * ppi; x.beginPath(); x.moveTo(px + .5, ruler - (i % (stepIn * 3) ? 5 : 10)); x.lineTo(px + .5, ruler); x.stroke(); if (i % (stepIn * 3) === 0) x.fillText(i + "″", px + 2, 10); }
+  for (let i = 0; i <= R.printH; i += stepIn) { const py = oy + i * ppi; x.beginPath(); x.moveTo(ruler - (i % (stepIn * 3) ? 5 : 10), py + .5); x.lineTo(ruler, py + .5); x.stroke(); if (i % (stepIn * 3) === 0 && i) x.fillText(i + "″", 1, py - 2); }
+}
+$("#v-repeat").addEventListener("click", e => {
+  const R = S.repeat, b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.lay) R.layout = b.dataset.lay;
+  else if (b.dataset.ground) R.ground = b.dataset.ground;
+  else if (b.dataset.tex) R.texture = b.dataset.tex;
+  else if (b.dataset.size) { const [w, h] = b.dataset.size.split(",").map(Number); R.printW = w; R.printH = h; }
+  else return;
+  renderRepeatControls(); scheduleRepeat(); persist();
+});
+$("#v-repeat").addEventListener("input", e => {
+  const R = S.repeat, t = e.target, v = parseFloat(t.value);
+  const map = { tileIn: "tileIn", printW: "printW", printH: "printH", rScale: "scale", rAlt: "alt", gn: "gn", gw: "gw" };
+  if (map[t.id]) { if (!isFinite(v)) return; R[map[t.id]] = t.id === "tileIn" ? clamp(v, .5, 36) : t.id.startsWith("print") ? clamp(v, 2, 120) : v; }
+  else if (t.id === "bgc") R.bg = t.value; else if (t.id === "gc") R.g = t.value;
+  else if (t.id === "dpi") R.dpi = +t.value; else if (t.id === "filler") R.filler = t.value; else return;
+  if (t.type === "range") renderRepeatControls(); else $("#spec") && renderSpecOnly();
+  scheduleRepeat(); persist();
+});
+function renderSpecOnly() { const keep = document.activeElement; renderRepeatControls(); if (keep?.id) { const el = $("#" + keep.id); if (el && el !== keep) el.focus(); } }
+$("#tileGuideBtn").onclick = e => { showTile = !showTile; e.currentTarget.setAttribute("aria-pressed", showTile); scheduleRepeat(); };
+new ResizeObserver(() => { if (S.tab === "repeat") scheduleRepeat(); }).observe($("#pvWrap"));
+
+/* ================= mockups ================= */
+const ITEMS = {
+  dress: { name: "Slip dress", inches: 16, span: 124, vb: "0 0 400 480",
+    body: "M138 135Q170 150 200 140Q230 150 262 135Q272 195 258 250L335 462Q200 486 65 462L142 250Q128 195 138 135Z",
+    extra: t => `<path d="M146 138L162 38M254 138L238 38" stroke="${t}" stroke-width="4" stroke-linecap="round" fill="none"/>`,
+    shade: "M138 135Q170 150 200 140Q230 150 262 135Q272 195 258 250L335 462Q200 486 65 462L142 250Q128 195 138 135Z", folds: "M180 250Q170 360 150 470M220 250Q232 360 255 472M200 260L200 478" },
+  tee: { name: "Boxy tee", inches: 22, span: 192, vb: "0 0 400 480",
+    body: "M150 38Q200 92 250 38L300 52L365 105L330 175L296 158L296 452L104 452L104 158L70 175L35 105L100 52Z",
+    extra: t => `<path d="M150 38Q200 92 250 38" stroke="${t}" stroke-width="5" fill="none"/><path d="M104 158L104 452M296 158L296 452" stroke="rgba(0,0,0,.15)" stroke-width="1.5"/>`,
+    folds: "M150 200Q160 320 140 450M250 210Q240 330 262 450" },
+  tote: { name: "Canvas tote", inches: 15, span: 220, vb: "0 0 400 480",
+    body: "M90 170L310 170L325 452L75 452Z",
+    pre: t => `<path d="M140 172C140 58 260 58 260 172" stroke="${t}" stroke-width="14" fill="none" stroke-linecap="round"/>`,
+    extra: t => `<path d="M90 170L310 170" stroke="${t}" stroke-width="6"/>`, folds: "M160 175L150 450M250 175L262 450" },
+  pillow: { name: "Throw pillow", inches: 20, span: 260, vb: "0 0 400 480",
+    body: "M70 110Q200 90 330 110Q352 240 330 370Q200 390 70 370Q48 240 70 110Z",
+    extra: t => `<path d="M70 110Q200 90 330 110Q352 240 330 370Q200 390 70 370Q48 240 70 110Z" stroke="${t}" stroke-width="4" fill="none"/>`, folds: "M70 110Q160 200 200 240M330 110Q240 200 200 240M70 370Q160 290 200 240M330 370Q240 290 200 240" },
+  scarf: { name: "Silk scarf", inches: 35, span: 290, vb: "0 0 400 480",
+    body: "M55 95L345 85L350 380L60 395Z",
+    extra: t => `<path d="M70 108L332 99L336 366L74 380Z" stroke="${t}" stroke-width="6" fill="none"/>`, folds: "M60 240Q200 220 350 245" },
+  wall: { name: "Wallpaper", inches: 120, span: 400, vb: "0 0 400 480",
+    body: "M0 0H400V350H0Z",
+    extra: t => `<rect y="350" width="400" height="130" fill="#C9B79C"/><rect y="344" width="400" height="8" fill="#F2EEE6"/><path d="M70 300Q70 270 100 270H300Q330 270 330 300V380H70Z" fill="${t}"/><rect x="58" y="300" width="28" height="80" rx="10" fill="${t}"/><rect x="314" y="300" width="28" height="80" rx="10" fill="${t}"/><rect x="80" y="380" width="8" height="20" fill="#3a2e22"/><rect x="312" y="380" width="8" height="20" fill="#3a2e22"/>`, folds: "" }
+};
+let mockToken = 0, mockTile = null;
+async function renderMock() {
+  const tok = ++mockToken, R = S.repeat;
+  const tileRes = 64; // px per inch for the mock texture
+  const { canvas, U } = await buildTile(Object.assign({}, R, { texture: "none" }), tileRes * Math.min(1, 16 / R.tileIn));
+  if (tok !== mockToken) return;
+  mockTile = canvas.toDataURL("image/jpeg", 0.88);
+  const unitIn = R.tileIn * 2;
+  const card = (k, big) => {
+    const it = ITEMS[k], ppi = it.span / it.inches, w = unitIn * ppi, id = "p" + k + (big ? "b" : "");
+    const shade = S.mock.shade ? `<g style="mix-blend-mode:multiply" pointer-events="none"><path d="${it.body}" fill="url(#g${id})"/>${it.folds ? `<path d="${it.folds}" stroke="rgba(0,0,0,.10)" stroke-width="6" fill="none" filter="url(#bl${id})"/>` : ""}</g>` : "";
+    return `<svg viewBox="${it.vb}" role="img" aria-label="${it.name} mockup"><defs>
+      <pattern id="${id}" patternUnits="userSpaceOnUse" width="${f(w)}" height="${f(w)}" patternTransform="rotate(${S.mock.rot})"><image href="${mockTile}" width="${f(w)}" height="${f(w)}" preserveAspectRatio="none"/></pattern>
+      <linearGradient id="g${id}" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+      <filter id="bl${id}"><feGaussianBlur stdDeviation="5"/></filter>
+      <filter id="tx${id}"><feTurbulence type="fractalNoise" baseFrequency="${R.texture === "linen" ? ".9 .25" : ".8"}" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .2  0 0 0 .18 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+    </defs>
+    ${it.pre ? it.pre(S.mock.trim) : ""}
+    <path d="${it.body}" fill="url(#${id})"/>
+    ${R.texture !== "none" ? `<path d="${it.body}" fill="#fff" filter="url(#tx${id})"/>` : ""}
+    ${shade}${it.extra ? it.extra(S.mock.trim) : ""}</svg>`;
+  };
+  const sel = S.mock.item, it = ITEMS[sel];
+  $("#mockStage").innerHTML = `<div class="hero-mock">${card(sel, true)}<div class="meta"><span class="kind">Live mockup · true scale</span><h2>${esc(S.motif.name)} on a ${esc(it.name.toLowerCase())}</h2>
+    <div class="spec"><span>Product width <b>${it.inches}″</b></span><span>Repeat unit <b>${unitIn}″</b></span><span>Repeats across <b>${(it.inches / unitIn).toFixed(1)}</b></span></div>
+    <p class="hint" style="display:block;font-size:13px">${LAYOUTS[R.layout].label} repeat on a ${GROUNDS[R.ground].toLowerCase()} ground, ${TEXTURES[R.texture].toLowerCase()} finish. Tap another product to swap.</p>
+    <div class="row"><button class="btn" id="pinMockBtn">Pin this look</button><button class="btn dark" id="postMockBtn">Share to community</button></div></div></div>` +
+    Object.keys(ITEMS).map(k => `<button class="mockcard${k === sel ? " on" : ""}" data-item="${k}">${card(k)}<span class="cap">${ITEMS[k].name}<span>${ITEMS[k].inches}″ wide</span></span></button>`).join("");
+  $("#mTile").value = R.tileIn; $("#mTileOut").textContent = R.tileIn + "″";
+  $("#mRot").value = S.mock.rot; $("#mRotOut").textContent = S.mock.rot + "°";
+  $("#mTrim").value = S.mock.trim; $("#mShade").checked = S.mock.shade;
+}
+$("#mockStage").addEventListener("click", e => {
+  const b = e.target.closest("[data-item]"); if (b) { S.mock.item = b.dataset.item; persist(); renderMock(); return; }
+  if (e.target.id === "pinMockBtn") pinCurrent("Mockup: " + ITEMS[S.mock.item].name);
+  if (e.target.id === "postMockBtn") openPost();
+});
+let mockTimer = 0; const mockSoon = () => { clearTimeout(mockTimer); mockTimer = setTimeout(renderMock, 80); };
+$("#mTile").oninput = e => { S.repeat.tileIn = +e.target.value; $("#mTileOut").textContent = S.repeat.tileIn + "″"; mockSoon(); persist(); };
+$("#mRot").oninput = e => { S.mock.rot = +e.target.value; $("#mRotOut").textContent = S.mock.rot + "°"; mockSoon(); persist(); };
+$("#mTrim").oninput = e => { S.mock.trim = e.target.value; mockSoon(); persist(); };
+$("#mShade").onchange = e => { S.mock.shade = e.target.checked; mockSoon(); persist(); };
+$("#postBtn2").onclick = () => openPost();
+$("#exportBtn2").onclick = () => openExport();
+
+/* ================= capabilities ================= */
+let DB = null, USER = null, UID = null, ASSETS = null, DL = null;
+let boardRemote = false, showcase = [], likes = {}, profiles = {};
+(async () => {
+  const c = window.claude; if (!c?.use) { renderBoardSync(); return; }
+  const get = n => c.use(n).catch(() => null);
+  const [db, user, assets, dl, sample] = await Promise.all([get("db"), get("user"), get("assets"), get("downloads"), get("sample")]);
+  DB = db; USER = user; ASSETS = assets; DL = dl; SAMPLE = sample;
+  if (USER) UID = await USER.id().catch(() => null);
+  if (DB && UID) {
+    const boardDoc = DB.doc(`data/users/${UID}/board/pins`);
+    boardDoc.onSnapshot(snap => {
+      const d = snap.exists ? snap.data() : null;
+      if (d && Array.isArray(d.pins)) { S.pins = d.pins; boardRemote = true; }
+      else if (!boardRemote && S.pins.length) { boardRemote = true; saveBoard(); }
+      else boardRemote = true;
+      renderBoard();
+    }, () => {});
+    DB.collection("showcase").onSnapshot(snap => { showcase = snap.docs.map(d => ({ uid: d.id, ...d.data() })); resolveNames(); renderCommunity(); }, () => {});
+    DB.collection("likes").onSnapshot(snap => { likes = {}; snap.docs.forEach(d => { likes[d.id] = d.data()?.ids || {}; }); renderCommunity(); }, () => {});
+  }
+  renderBoardSync(); renderCommunity();
+})();
+async function resolveNames() {
+  if (!USER?.profiles) return;
+  const ids = [...new Set([UID, ...showcase.map(s => s.uid)].filter(Boolean))];
+  try { profiles = await USER.profiles(ids) || {}; } catch { profiles = {}; }
+  renderCommunity();
+}
+async function saveFile(filename, blob) {
+  if (DL) {
+    try { await DL.save({ filename, data: blob }); toast("Saved " + filename); return; }
+    catch (e) { if (e?.code === "declined") return; if (e?.code === "rate_limited") { toast("Another save is open. Try again in a moment."); return; } }
+  }
+  const url = URL.createObjectURL(blob);
+  modal(`<h2>Your file is ready</h2><p class="hint" style="display:block">Downloads aren't available in this view. Right-click or long-press the image to save it.</p><img src="${url}" alt="${esc(filename)}" style="border-radius:10px;border:1px solid var(--line)"><button class="btn dark" data-close>Done</button>`);
+}
+
+/* ================= export ================= */
+function canvasBlob(c, type, q) { return new Promise(r => c.toBlob(r, type, q)); }
+function openExport() {
+  const R = S.repeat, unitPx = Math.round(R.tileIn * R.dpi) * 2;
+  let pdpi = R.dpi; const maxDim = 8000; while (Math.max(R.printW, R.printH) * pdpi > maxDim && pdpi > 72) pdpi = Math.floor(pdpi * .8);
+  const name = (S.motif.name || "motif").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "motif";
+  modal(`<h2>Export print files</h2>
+  <div class="exp">
+    <button data-x="svg">Motif · vector SVG<small>Editable in Illustrator, Figma or Affinity</small><span class="mono">SVG</span></button>
+    <button data-x="png">Motif · transparent PNG<small>3000 × 3000 px, for placement prints</small><span class="mono">PNG</span></button>
+    <button data-x="tile">Seamless repeat tile<small>${unitPx} × ${unitPx} px · ${R.tileIn * 2}″ at ${R.dpi} dpi · ready for Spoonflower or a print mill</small><span class="mono">JPG</span></button>
+    <button data-x="print">Full print at size<small>${R.printW}″ × ${R.printH}″ at ${pdpi} dpi · ${Math.round(R.printW * pdpi)} × ${Math.round(R.printH * pdpi)} px${pdpi < R.dpi ? " (resolution lowered to stay under 8000 px)" : ""}</small><span class="mono">JPG</span></button>
+    <button data-x="json">Project file<small>Reopen this motif and repeat later</small><span class="mono">JSON</span></button>
+  </div><button class="btn" data-close>Close</button>`, async (e, close) => {
+    const k = e.target.closest("[data-x]")?.dataset.x; if (!k) return;
+    e.target.closest("[data-x]").disabled = true; toast("Preparing file…");
+    try {
+      if (k === "svg") await saveFile(name + ".svg", new Blob([motifSVG(S.motif, 1000)], { type: "image/svg+xml" }));
+      if (k === "png") { const im = await motifImage(S.motif), c = document.createElement("canvas"); c.width = c.height = 3000; c.getContext("2d").drawImage(im, 0, 0, 3000, 3000); await saveFile(name + "-motif.png", await canvasBlob(c, "image/png")); }
+      if (k === "tile") { const { canvas } = await buildTile(R, R.dpi); await saveFile(`${name}-repeat-${R.tileIn * 2}in-${R.dpi}dpi.jpg`, await canvasBlob(canvas, "image/jpeg", .95)); }
+      if (k === "print") {
+        const { canvas } = await buildTile(R, pdpi), c = document.createElement("canvas");
+        c.width = Math.round(R.printW * pdpi); c.height = Math.round(R.printH * pdpi);
+        const x = c.getContext("2d"); x.fillStyle = x.createPattern(canvas, "repeat"); x.fillRect(0, 0, c.width, c.height);
+        await saveFile(`${name}-${R.printW}x${R.printH}in.jpg`, await canvasBlob(c, "image/jpeg", .92));
+      }
+      if (k === "json") await saveFile(name + ".motifme.json", new Blob([JSON.stringify({ motif: S.motif, repeat: S.repeat, palette: S.palette }, null, 2)], { type: "application/json" }));
+    } catch { toast("That export failed. Try a smaller print size."); }
+    close();
+  });
+}
+$("#exportBtn").onclick = openExport;
+
+/* ================= modal ================= */
+function modal(html, onClick) {
+  const root = $("#modalRoot");
+  root.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><div class="dialog">${html}</div></div>`;
+  const m = root.firstChild, close = () => { root.innerHTML = ""; };
+  m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-close]")) close(); else onClick?.(e, close); });
+  m.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  setTimeout(() => m.querySelector("input,textarea,button")?.focus(), 30);
+  return m;
+}
+
+/* ================= mood board ================= */
+function saveBoard() {
+  store.set("pins", S.pins.filter(p => !p.local || p.src.length < 400000));
+  if (DB && UID) DB.doc(`data/users/${UID}/board/pins`).set({ pins: S.pins.filter(p => !p.local) }).catch(() => toast("Couldn't sync your board. Pins are kept on this device."));
+  $("#pinCount").textContent = S.pins.length;
+}
+function renderBoardSync() {
+  $("#boardSync").innerHTML = DB && UID
+    ? `<span class="tagb" style="color:var(--ok);border-color:var(--ok)">● Synced to your account</span>`
+    : `<span class="tagb">Saved on this device</span>`;
+}
+const thumbCache = new Map();
+async function patternThumb(spec, w = 360, h = 270) {
+  const key = JSON.stringify(spec) + w + "x" + h;
+  if (thumbCache.has(key)) return thumbCache.get(key);
+  const p = (async () => {
+    const R = Object.assign({}, DEFAULT_REPEAT, spec.repeat), dpr = 2;
+    // thumbnails show about three tiles across, whatever the real tile size
+    const { canvas } = await buildTile(R, (w / 3) * dpr / R.tileIn, spec.motif);
+    const c = document.createElement("canvas"); c.width = w * dpr; c.height = h * dpr;
+    const x = c.getContext("2d"); x.fillStyle = x.createPattern(canvas, "repeat"); x.fillRect(0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", .85);
+  })();
+  thumbCache.set(key, p); return p;
+}
+function renderBoard() {
+  $("#pinCount").textContent = S.pins.length;
+  if (S.tab !== "board") return;
+  const box = $("#pins");
+  if (!S.pins.length) { box.innerHTML = `<div class="empty" style="column-span:all"><b>Your board is empty</b><span>Upload reference images, or tap “Pin motif” in the studio to save your own work here.</span></div>`; return; }
+  box.innerHTML = S.pins.map(p => `<figure class="pin" data-pin="${p.id}" style="margin:0 0 14px">
+    ${p.kind === "image" ? `<img src="${esc(p.assetId ? "/_blob/" + p.assetId : p.src)}" alt="${esc(p.note || "Inspiration image")}" loading="lazy">` : `<img data-spec="${p.id}" alt="${esc(p.note || "Pattern")}" style="aspect-ratio:4/3;background:var(--soft)">`}
+    <div class="pb"><span class="kind">${p.kind === "image" ? "Reference" : "My print"}</span>
+    <input class="note" data-note="${p.id}" value="${esc(p.note || "")}" placeholder="Add a note…" aria-label="Pin note">
+    <div class="pa">${p.kind === "image" ? `<button class="btn sm" data-act="colors">Use colors</button>` : `<button class="btn sm" data-act="open">Open in studio</button>`}<button class="btn sm ghost" data-act="remove">Remove</button></div></div></figure>`).join("");
+  S.pins.filter(p => p.kind === "pattern").forEach(async p => { const img = box.querySelector(`[data-spec="${p.id}"]`); if (img) img.src = await patternThumb(p.spec); });
+}
+async function addImagePins(files) {
+  for (const file of files) {
+    if (!file.type.startsWith("image/")) continue;
+    try {
+      const r = await fileToDataURL(file, 1100);
+      const pin = { id: uid(), kind: "image", note: file.name.replace(/\.[^.]+$/, "").slice(0, 40), at: Date.now() };
+      if (ASSETS) {
+        try { const blob = await canvasBlob(r.canvas, "image/jpeg", .86); const up = await ASSETS.upload(blob, { type: "image/jpeg" }); pin.assetId = up.id; }
+        catch { pin.src = r.dataURL; pin.local = true; }
+      } else { pin.src = r.dataURL; pin.local = true; }
+      S.pins.unshift(pin);
+    } catch (err) { toast(err.message); }
+  }
+  saveBoard(); renderBoard();
+}
+$("#pinFile").onchange = e => { addImagePins([...e.target.files]); e.target.value = ""; };
+const drop = $("#drop");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addImagePins([...e.dataTransfer.files]));
+$("#pins").addEventListener("click", async e => {
+  const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
+  const id = e.target.closest("[data-pin]").dataset.pin, p = S.pins.find(x => x.id === id);
+  if (act === "remove") { S.pins = S.pins.filter(x => x.id !== id); saveBoard(); renderBoard(); toast("Pin removed"); }
+  if (act === "open") loadSpec(p.spec, "Opened " + (p.spec.motif.name || "print"));
+  if (act === "colors") { try { const im = await loadImg(p.assetId ? "/_blob/" + p.assetId : p.src); applyExtracted(extractPalette(im), (p.note || "Pin").slice(0, 20)); go("studio"); } catch { toast("Couldn't read colors from that pin."); } }
+});
+$("#pins").addEventListener("change", e => {
+  const id = e.target.dataset.note; if (!id) return; const p = S.pins.find(x => x.id === id); if (p) { p.note = e.target.value.slice(0, 80); saveBoard(); }
+});
+function currentSpec() { return deep({ motif: S.motif, repeat: S.repeat }); }
+function pinCurrent(note) { S.pins.unshift({ id: uid(), kind: "pattern", note: note || S.motif.name, spec: currentSpec(), at: Date.now() }); saveBoard(); toast("Pinned to your mood board"); }
+$("#pinMotifBtn").onclick = () => pinCurrent(S.motif.name);
+$("#pinPatternBtn").onclick = () => pinCurrent(S.motif.name + " · " + LAYOUTS[S.repeat.layout].label);
+function loadSpec(spec, msg) {
+  S.motif = deep(spec.motif); S.motif.strokes ||= [];
+  S.motif.layers.forEach(l => { l.id ||= uid(); });
+  S.repeat = Object.assign({}, DEFAULT_REPEAT, spec.repeat || {}); fixSel();
+  commit(true); go("studio"); renderStudio(); if (msg) toast(msg);
+}
+
+/* ================= community ================= */
+const TAGS = ["Floral", "Geometric", "Stripe", "Retro", "Block print", "Kids", "Tile"];
+let filter = "All";
+function starterSpecs() {
+  const m1 = sampleMotif();
+  const m2 = { name: "Riviera Daisy", strokes: [], layers: [L("petal", { name: "Petals", count: 16, r: 26, size: 120, width: .32, tip: .1, fill: "#FFFFFF", stroke: "#E94E86", sw: 2 }), L("disc", { name: "Center", size: 30, fill: "#F2A541" }), L("dots", { name: "Dots", count: 10, r: 18, size: 3, fill: "#E94E86" })] };
+  const m3 = { name: "Rouge Tile", strokes: [], layers: [L("square", { name: "Tile", count: 4, r: 165, size: 70, width: .9, tip: 1, rot: 45, fill: "#6E1A22" }), L("diamond", { name: "Diamonds", count: 8, r: 26, size: 170, width: .42, fill: "#A8323A", stroke: "#2A0F12", sw: 1.5 }), L("petal", { name: "Petals", count: 8, r: 20, size: 80, width: .55, tip: .6, rot: 22.5, fill: "#F0C9B6" }), L("disc", { name: "Core", size: 18, fill: "#2A0F12" })] };
+  const m4 = { name: "Sun Burst", strokes: [], layers: [L("stripe", { name: "Rays", count: 24, r: 60, size: 160, width: .45, tip: .1, fill: "#F26A2E" }), L("star", { name: "Star", count: 12, size: 90, width: .45, fill: "#121212" }), L("disc", { name: "Core", size: 30, fill: "#FAF7F2" })] };
+  return [
+    { key: "s1", title: "Dahlia Block on ticking", caption: "Half-drop block print over a pale blue stripe. A wallpaper classic.", tags: ["Floral", "Block print", "Stripe"], spec: { motif: m1, repeat: Object.assign({}, DEFAULT_REPEAT) } },
+    { key: "s2", title: "Riviera Daisy", caption: "Tossed daisies on pink and green awning stripes for swim and resort.", tags: ["Floral", "Retro", "Stripe"], spec: { motif: m2, repeat: { layout: "toss", ground: "stripe", g: "#0F6E5C", bg: "#F6B8CF", gn: 3, gw: .5, scale: .45, filler: "none", texture: "none", tileIn: 5 } } },
+    { key: "s3", title: "Rouge Tile", caption: "Encaustic-style tile in oxblood, made for upholstery and scarves.", tags: ["Geometric", "Tile"], spec: { motif: m3, repeat: { layout: "grid", ground: "none", bg: "#E8DCCB", scale: 1, filler: "none", texture: "paper", tileIn: 3 } } },
+    { key: "s4", title: "Sun Burst Check", caption: "Seventies starburst on a tangerine check. Loud, in a good way.", tags: ["Retro", "Geometric"], spec: { motif: m4, repeat: { layout: "brick", ground: "check", g: "#F4C7A8", bg: "#FAF7F2", gn: 4, scale: .7, filler: "star", texture: "none", tileIn: 3 } } }
+  ];
+}
+function allPosts() {
+  const out = [];
+  showcase.forEach(s => (s.posts || []).forEach(p => out.push(Object.assign({}, p, { uid: s.uid, key: s.uid + ":" + p.id }))));
+  return out.sort((a, b) => (b.at || 0) - (a.at || 0));
+}
+function likeCount(key) { return Object.values(likes).filter(m => m[key]).length; }
+function postCard(p, house) {
+  const pr = profiles[p.uid] || {}, me = p.uid === UID, liked = UID && likes[UID]?.[p.key];
+  return `<article class="post" data-key="${esc(p.key)}">
+    <img data-thumb="${esc(p.key)}" alt="${esc(p.title)} pattern" style="width:100%;aspect-ratio:4/3;background:var(--soft);display:block">
+    <div class="pb">
+      ${house ? `<div class="who"><span class="house">Starter print</span></div>` : `<div class="who"><img src="${esc(pr.avatarUrl || "")}" alt=""><b></b><span>${new Date(p.at || Date.now()).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span></div>`}
+      <h4>${esc(p.title)}</h4><p>${esc(p.caption || "")}</p>
+      <div class="tags">${(p.tags || []).map(t => `<span class="tagb">${esc(t)}</span>`).join("")}</div>
+      <div class="pa">${house ? `<span class="hint">Free to remix</span>` : `<button class="btn sm${liked ? " liked" : ""}" data-like="${esc(p.key)}" ${UID ? "" : "disabled"}>♥ ${likeCount(p.key)}</button>`}
+      <span class="row">${me ? `<button class="btn sm ghost" data-delpost="${esc(p.id)}">Remove</button>` : ""}<button class="btn sm dark" data-remix="${esc(p.key)}">Remix</button></span></div>
+    </div></article>`;
+}
+function renderCommunity() {
+  if (S.tab !== "community") return;
+  $("#filters").innerHTML = ["All", ...TAGS].map(t => `<button class="tagb" data-filter="${t}" aria-pressed="${filter === t}">${t}</button>`).join("");
+  const posts = allPosts().filter(p => filter === "All" || (p.tags || []).includes(filter));
+  const mine = showcase.find(s => s.uid === UID), myPosts = mine?.posts || [];
+  const myLikes = myPosts.reduce((n, p) => n + likeCount(UID + ":" + p.id), 0);
+  const pr = profiles[UID] || {};
+  $("#profile").innerHTML = `<div class="banner" style="background:linear-gradient(90deg,${S.palette.colors.slice(1, 5).join(",")})"></div><div class="pi">
+    <img class="avatar" src="${esc(pr.avatarUrl || "")}" alt="">
+    <h4 id="myName"></h4>
+    <input class="txt" id="headline" placeholder="Your headline, e.g. Print designer · resortwear" value="${esc(mine?.headline || store.get("headline", ""))}" ${DB && UID ? "" : "disabled"} aria-label="Your headline">
+    <div class="stat"><span>Prints shared</span><b>${myPosts.length}</b></div>
+    <div class="stat"><span>Appreciations</span><b>${myLikes}</b></div>
+    <div class="stat"><span>Pins on your board</span><b>${S.pins.length}</b></div>
+    <button class="btn dark" id="postBtn3" ${DB && UID ? "" : "disabled"}>Share current print</button>
+    ${DB && UID ? "" : `<p class="hint" style="display:block">Sign in to claude.ai to post and appreciate prints.</p>`}
+  </div>`;
+  $("#myName").textContent = pr.name || "You";
+  const feed = $("#feed");
+  feed.innerHTML = posts.length ? posts.map(p => postCard(p)).join("") : `<div class="empty" style="grid-column:1/-1"><b>${filter === "All" ? "No prints shared yet" : "No " + esc(filter.toLowerCase()) + " prints yet"}</b><span>Be the first. Finish a repeat, then tap “Share to community”.</span></div>`;
+  feed.querySelectorAll(".post").forEach(el => { const p = posts.find(x => x.key === el.dataset.key); const nm = el.querySelector(".who b"); if (nm) nm.textContent = profiles[p.uid]?.name || "Someone"; });
+  const st = starterSpecs(); $("#starter").innerHTML = st.map(p => postCard(p, true)).join("");
+  [...posts, ...st].forEach(async p => { const im = document.querySelector(`[data-thumb="${CSS.escape(p.key)}"]`); if (im && p.spec?.motif) { try { im.src = await patternThumb(p.spec); } catch {} } });
+}
+$("#v-community").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.filter) { filter = b.dataset.filter; renderCommunity(); }
+  if (b.id === "postBtn3") openPost();
+  if (b.dataset.remix) { const p = [...allPosts(), ...starterSpecs()].find(x => x.key === b.dataset.remix); if (p) loadSpec(p.spec, "Remixing “" + p.title + "”"); }
+  if (b.dataset.like && DB && UID) {
+    const mineL = Object.assign({}, likes[UID] || {}); const k = b.dataset.like;
+    if (mineL[k]) delete mineL[k]; else mineL[k] = true;
+    likes[UID] = mineL; renderCommunity();
+    DB.doc("likes/" + UID).set({ ids: mineL }).catch(() => toast("Couldn't save that. Try again."));
+  }
+  if (b.dataset.delpost && DB && UID) {
+    const mine = showcase.find(s => s.uid === UID); if (!mine) return;
+    const posts = (mine.posts || []).filter(p => p.id !== b.dataset.delpost);
+    DB.doc("showcase/" + UID).set({ headline: mine.headline || "", posts }).then(() => toast("Post removed")).catch(() => toast("Couldn't remove that post."));
+  }
+});
+$("#v-community").addEventListener("change", e => {
+  if (e.target.id !== "headline" || !DB || !UID) return;
+  const v = e.target.value.slice(0, 80); store.set("headline", v);
+  const mine = showcase.find(s => s.uid === UID);
+  DB.doc("showcase/" + UID).set({ headline: v, posts: mine?.posts || [] }).catch(() => toast("Couldn't save your headline."));
+});
+function openPost() {
+  if (!DB || !UID) { toast("Sign in to claude.ai to share prints with the community."); go("community"); return; }
+  modal(`<h2>Share to community</h2>
+    <img id="postPrev" alt="Pattern preview" style="border-radius:10px;aspect-ratio:4/3;background:var(--soft);width:100%">
+    <div class="field"><label for="ptitle">Title</label><input class="txt" id="ptitle" maxlength="60" value="${esc(S.motif.name)}"></div>
+    <div class="field"><label for="pcap">Caption</label><textarea class="txt" id="pcap" maxlength="240" placeholder="What inspired it? What would you print it on?"></textarea></div>
+    <div class="field"><span class="lab">Tags</span><div class="tags" id="ptags">${TAGS.map(t => `<button class="tagb" type="button" data-t="${t}" aria-pressed="false">${t}</button>`).join("")}</div></div>
+    <div class="row"><button class="btn dark" id="pgo">Post print</button><button class="btn" data-close>Cancel</button></div>`, async (e, close) => {
+    const t = e.target.closest("[data-t]"); if (t) { t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") !== "true"); return; }
+    if (e.target.id !== "pgo") return;
+    const title = $("#ptitle").value.trim(); if (!title) { $("#ptitle").focus(); toast("Give your print a title."); return; }
+    const post = { id: uid(), title: title.slice(0, 60), caption: $("#pcap").value.trim().slice(0, 240), tags: $$("#ptags [aria-pressed=true]").map(b => b.dataset.t), spec: currentSpec(), at: Date.now() };
+    const mine = showcase.find(s => s.uid === UID), posts = [post, ...(mine?.posts || [])].slice(0, 40);
+    e.target.disabled = true;
+    try { await DB.doc("showcase/" + UID).set({ headline: mine?.headline || store.get("headline", ""), posts }); close(); toast("Posted to the community"); go("community"); }
+    catch (err) { e.target.disabled = false; toast(err?.code === "quota_exceeded" || err?.code === "invalid_argument" ? "That print is too large to post. Remove some freehand strokes and try again." : "Couldn't post right now. Try again."); }
+  });
+  patternThumb(currentSpec(), 480, 360).then(src => { const im = $("#postPrev"); if (im) im.src = src; });
+}
+$("#postBtn").onclick = openPost;
+
+/* ================= navigation ================= */
+function go(tab) {
+  S.tab = tab;
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab === tab));
+  ["studio", "repeat", "mock", "board", "community"].forEach(v => { $("#v-" + v).hidden = v !== tab; });
+  if (tab === "studio") renderStudio();
+  if (tab === "repeat") { renderRepeatControls(); requestAnimationFrame(drawRepeat); }
+  if (tab === "mock") renderMock();
+  if (tab === "board") renderBoard();
+  if (tab === "community") renderCommunity();
+  try { history.replaceState(null, "", "#" + tab); } catch {}
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go); });
+$$(".tab").forEach(t => t.addEventListener("click", () => go(t.dataset.tab)));
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { if (S.tab === "repeat") scheduleRepeat(); });
+
+renderAddMenu(); renderTip(); $("#pinCount").textContent = S.pins.length;
+const start = (location.hash || "").slice(1);
+go(["studio", "repeat", "mock", "board", "community"].includes(start) ? start : "studio");
+})();
+</script>
+
+</body>
+</html>
