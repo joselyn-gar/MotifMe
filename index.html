@@ -201,6 +201,51 @@ textarea.txt{resize:vertical;min-height:70px}
 .filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .house{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--soft);border-radius:999px;padding:2px 8px;color:var(--muted)}
 
+/* home dashboard */
+.dh{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;padding-top:8px}
+.dh .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.dh h1{font-family:var(--f-display);font-weight:900;font-size:clamp(30px,4.4vw,46px);line-height:1.02;margin:6px 0 0;letter-spacing:-.01em;text-wrap:balance}
+.dh h1 i{font-weight:400}
+.stats{display:flex;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats div{padding:10px 18px;display:grid;gap:2px;border-left:1px solid var(--line)}
+.stats div:first-child{border-left:0}
+.stats b{font-family:var(--f-mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.stats span{font-size:11px;color:var(--muted)}
+.askcard{border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:12px;background:var(--surface)}
+.askcard h2{margin:0;font-family:var(--f-display);font-size:22px}
+.askrow{display:flex;gap:8px;border:1px solid var(--line);border-radius:999px;padding:5px 5px 5px 18px;align-items:center}
+.askrow:focus-within{border-color:var(--ink)}
+.askrow input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:15px;padding:8px 0}
+.qgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.qcard{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px;display:grid;gap:10px;text-align:left;align-content:start}
+.qcard:hover{border-color:var(--ink)}
+.qcard .qi{width:40px;height:40px;border-radius:10px;background:var(--soft);display:grid;place-items:center}
+.qcard b{font-size:15px}
+.qcard span{color:var(--muted);font-size:13px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
+.panel h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.panel h3 .btn{text-transform:none;letter-spacing:0}
+.cont{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:center}
+.cont .mthumb{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cont .mthumb svg{width:100%;height:100%;display:block}
+.cont h4{margin:0;font-family:var(--f-display);font-size:26px;line-height:1.1}
+.strip{width:100%;height:90px;border-radius:10px;border:1px solid var(--line);object-fit:cover;background:var(--soft);display:block}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.minis img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--soft);display:block}
+.minis button{padding:0;border:0;background:none;display:grid;gap:4px;text-align:left;font-size:12px;color:var(--muted);min-width:0}
+.minis button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sugs{display:flex;gap:6px;flex-wrap:wrap}
+.fresh{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fresh button{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0;overflow:hidden;text-align:left;display:grid}
+.fresh button:hover{border-color:var(--ink)}
+.fresh img{width:100%;aspect-ratio:4/3;display:block;background:var(--soft)}
+.fresh .fb{padding:10px 12px;display:grid;gap:2px}
+.fresh .fb b{font-family:var(--f-display);font-size:16px}
+.fresh .fb span{font-size:12px;color:var(--muted)}
+@media (max-width:900px){.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.dgrid{grid-template-columns:1fr}.fresh{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.cont{grid-template-columns:1fr}.cont .mthumb{max-width:180px}.fresh{grid-template-columns:1fr}.stats{width:100%}.stats div{flex:1;padding:10px 12px}}
+
 /* modal + toast */
 .modal{position:fixed;inset:0;background:rgba(10,8,14,.45);display:grid;place-items:center;z-index:20;padding:16px}
 .dialog{background:var(--surface);border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:20px;display:grid;gap:14px;box-shadow:var(--shadow)}
@@ -232,7 +277,7 @@ textarea.txt{resize:vertical;min-height:70px}
 
 <div class="app">
   <header class="top">
-    <button class="brand" data-go="studio" aria-label="MotifMe studio">
+    <button class="brand" data-go="home" aria-label="MotifMe home">
       <span><span class="word"><b>Motif</b><i>Me</i></span><small>Motif &amp; print studio</small></span>
     </button>
     <form class="ask" id="askForm" autocomplete="off">
@@ -245,6 +290,7 @@ textarea.txt{resize:vertical;min-height:70px}
       <button class="btn dark" id="exportBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="lbl">Export</span></button>
     </div>
     <nav class="tabs" role="tablist" aria-label="Workspace">
+      <button class="tab" role="tab" data-tab="home">Home</button>
       <button class="tab" role="tab" data-tab="studio"><span class="step">01</span>Motif Studio</button>
       <button class="tab" role="tab" data-tab="repeat"><span class="step">02</span>Pattern Repeat</button>
       <button class="tab" role="tab" data-tab="mock"><span class="step">03</span>Mockups</button>
@@ -254,6 +300,9 @@ textarea.txt{resize:vertical;min-height:70px}
   </header>
 
   <main>
+    <!-- ============ HOME ============ -->
+    <section class="view page" id="v-home" hidden><div class="page-in" id="home"></div></section>
+
     <!-- ============ STUDIO ============ -->
     <section class="view studio" id="v-studio">
       <aside class="side">
@@ -1340,6 +1389,7 @@ async function patternThumb(spec, w = 360, h = 270) {
 }
 function renderBoard() {
   $("#pinCount").textContent = S.pins.length;
+  if (S.tab === "home") renderHome();
   if (S.tab !== "board") return;
   const box = $("#pins");
   if (!S.pins.length) { box.innerHTML = `<div class="empty" style="column-span:all"><b>Your board is empty</b><span>Upload reference images, or tap “Pin motif” in the studio to save your own work here.</span></div>`; return; }
@@ -1425,6 +1475,7 @@ function postCard(p, house) {
     </div></article>`;
 }
 function renderCommunity() {
+  if (S.tab === "home") renderHome();
   if (S.tab !== "community") return;
   $("#filters").innerHTML = ["All", ...TAGS].map(t => `<button class="tagb" data-filter="${t}" aria-pressed="${filter === t}">${t}</button>`).join("");
   const posts = allPosts().filter(p => filter === "All" || (p.tags || []).includes(filter));
@@ -1492,11 +1543,107 @@ function openPost() {
 }
 $("#postBtn").onclick = openPost;
 
+/* ================= home dashboard ================= */
+const SUGGESTIONS = ["Indigo block-print marigold", "Retro daisy on gingham", "Art deco fan tile", "Cherry blossom toile", "Celestial sun and stars", "Folk tulip in tomato red"];
+function blankMotif(draw) {
+  S.motif = { name: "Untitled motif", layers: draw ? [] : [L("petal", { name: "Petals", count: 8, r: 30, size: 120, width: .55, tip: .4, fill: S.palette.colors[1] || "#E9668B" }), L("disc", { name: "Center", size: 26, fill: [...S.palette.colors].sort((a, b) => lum(a) - lum(b))[0] })], strokes: [] };
+  S.tool = draw ? "draw" : "select"; fixSel(); commit(true); go("studio");
+  toast(draw ? "Blank canvas. Draw and watch it mirror." : "New motif started");
+}
+function renderHome() {
+  if (S.tab !== "home") return;
+  const h = new Date().getHours(), part = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+  const name = (profiles[UID]?.name || "").split(" ")[0];
+  const mine = showcase.find(s => s.uid === UID), myPosts = mine?.posts || [];
+  const apprec = myPosts.reduce((n, p) => n + likeCount(UID + ":" + p.id), 0);
+  const prints = S.pins.filter(p => p.kind === "pattern").slice(0, 6), refs = S.pins.filter(p => p.kind === "image").slice(0, 6);
+  const fresh = allPosts().slice(0, 3), st = starterSpecs(), freshList = fresh.length ? fresh : st.slice(0, 3);
+  const tip = TIPS[S.tip % TIPS.length], R = S.repeat;
+  const qi = d => `<span class="qi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg></span>`;
+  $("#home").innerHTML = `
+  <div class="dh">
+    <div><div class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</div>
+    <h1>Good ${part}${name ? ", " + esc(name) : ""}. <i>What are we printing?</i></h1></div>
+    <div class="stats"><div><b>${prints.length + refs.length}</b><span>Pins</span></div><div><b>${myPosts.length}</b><span>Prints shared</span></div><div><b>${apprec}</b><span>Appreciations</span></div></div>
+  </div>
+
+  <form class="askcard" id="homeAsk" autocomplete="off">
+    <h2>Ask Mofi</h2>
+    <div class="askrow"><input id="homeAskIn" placeholder="Describe a motif, a mood or a reference" aria-label="Describe a motif for Mofi"><button class="btn dark" type="submit">Create motif</button></div>
+    <div class="sugs">${SUGGESTIONS.map(s => `<button type="button" class="tagb" data-sug="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+  </form>
+
+  <div class="qgrid">
+    <button class="qcard" data-home="blank">${qi('<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>')}<b>New motif</b><span>Start from a simple flower and shape it layer by layer.</span></button>
+    <button class="qcard" data-home="draw">${qi('<path d="M3 21c3-1 5-3 7-6l8-8a2 2 0 0 0-3-3l-8 8c-3 2-5 4-4 9z"/>')}<b>Freehand kaleidoscope</b><span>Draw once and see it mirrored in real time.</span></button>
+    <button class="qcard" data-home="photo">${qi('<rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l2-3h4l2 3"/>')}<b>Palette from a photo</b><span>Pull colors from a reference image or a swatch.</span></button>
+    <button class="qcard" data-go="community">${qi('<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>')}<b>Remix a print</b><span>Open a community or starter print and make it yours.</span></button>
+  </div>
+
+  <div class="dgrid">
+    <section class="panel">
+      <h3>Continue where you left off <button class="btn sm" data-go="studio">Open studio</button></h3>
+      <div class="cont">
+        <div class="mthumb">${motifSVG(S.motif, 150).replace("<svg ", '<svg role="img" aria-label="Current motif" ')}</div>
+        <div style="display:grid;gap:10px;min-width:0">
+          <h4>${esc(S.motif.name)}</h4>
+          <div class="spec"><span><b>${S.motif.layers.length}</b> layers</span><span><b>${LAYOUTS[R.layout].label}</b> repeat</span><span>Tile <b>${R.tileIn}″</b></span><span><b>${GROUNDS[R.ground]}</b> ground</span></div>
+          <img class="strip" id="homeStrip" alt="Current repeat preview">
+          <div class="row"><button class="btn sm" data-go="repeat">Edit repeat</button><button class="btn sm" data-go="mock">See mockups</button><button class="btn sm dark" id="homeExport">Export</button></div>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <h3>Mofi tip <button class="btn sm ghost" id="homeNextTip">Next ›</button></h3>
+      <div style="display:grid;gap:8px"><b style="font-size:16px">${esc(tip.t)}</b><p style="margin:0;color:var(--muted)">${esc(tip.d)}</p></div>
+      <button class="btn" id="homeTipRun" style="justify-self:start">${esc(tip.a)}</button>
+    </section>
+  </div>
+
+  <div class="dgrid" style="grid-template-columns:1fr 1fr">
+    <section class="panel">
+      <h3>Saved prints <button class="btn sm" data-go="board">All pins</button></h3>
+      ${prints.length ? `<div class="minis">${prints.map(p => `<button data-openpin="${p.id}"><img data-hspec="${p.id}" alt=""><span>${esc(p.note || "Print")}</span></button>`).join("")}</div>` : `<p class="hint" style="display:block;margin:0">Prints you pin from the studio or repeat view show up here.</p>`}
+    </section>
+    <section class="panel">
+      <h3>Mood board <button class="btn sm" data-go="board">Open board</button></h3>
+      ${refs.length ? `<div class="minis">${refs.map(p => `<button data-go="board"><img src="${esc(p.assetId ? "/_blob/" + p.assetId : p.src)}" alt="${esc(p.note || "")}" loading="lazy"><span>${esc(p.note || "Reference")}</span></button>`).join("")}</div>` : `<p class="hint" style="display:block;margin:0">Upload wallpaper scans, tiles or runway shots to build your board.</p><label class="btn" for="pinFile" style="justify-self:start">Upload inspiration</label>`}
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>${fresh.length ? "Fresh from the community" : "Starter prints to remix"} <button class="btn sm" data-go="community">View all</button></h3>
+    <div class="fresh">${freshList.map(p => `<button data-hremix="${esc(p.key)}"><img data-hthumb="${esc(p.key)}" alt="${esc(p.title)}"><span class="fb"><b>${esc(p.title)}</b><span>${fresh.length ? esc(profiles[p.uid]?.name || "Someone") : "Starter print"} · Remix</span></span></button>`).join("")}</div>
+  </section>`;
+  patternThumb(currentSpec(), 640, 90).then(src => { const im = $("#homeStrip"); if (im) im.src = src; });
+  prints.forEach(async p => { const im = $(`[data-hspec="${p.id}"]`); if (im) im.src = await patternThumb(p.spec, 200, 200); });
+  freshList.forEach(async p => { const im = document.querySelector(`[data-hthumb="${CSS.escape(p.key)}"]`); if (im) im.src = await patternThumb(p.spec); });
+}
+$("#v-home").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.sug) { $("#homeAskIn").value = b.dataset.sug; $("#homeAskIn").focus(); }
+  if (b.dataset.home === "blank") blankMotif(false);
+  if (b.dataset.home === "draw") blankMotif(true);
+  if (b.dataset.home === "photo") $("#palFile").click();
+  if (b.dataset.openpin) { const p = S.pins.find(x => x.id === b.dataset.openpin); if (p) loadSpec(p.spec, "Opened " + (p.note || "print")); }
+  if (b.dataset.hremix) { const p = [...allPosts(), ...starterSpecs()].find(x => x.key === b.dataset.hremix); if (p) loadSpec(p.spec, "Remixing “" + p.title + "”"); }
+  if (b.id === "homeExport") openExport();
+  if (b.id === "homeNextTip") { S.tip++; renderTip(); renderHome(); }
+  if (b.id === "homeTipRun") { TIPS[S.tip % TIPS.length].run(); commit(true); toast("Applied: " + TIPS[S.tip % TIPS.length].t); go("studio"); }
+});
+$("#v-home").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("#homeAskIn").value.trim();
+  if (!v) { $("#homeAskIn").focus(); toast("Describe a motif first, or tap a suggestion."); return; }
+  $("#askInput").value = v; $("#askForm").requestSubmit();
+});
+
 /* ================= navigation ================= */
 function go(tab) {
   S.tab = tab;
   $$(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab === tab));
-  ["studio", "repeat", "mock", "board", "community"].forEach(v => { $("#v-" + v).hidden = v !== tab; });
+  ["home", "studio", "repeat", "mock", "board", "community"].forEach(v => { $("#v-" + v).hidden = v !== tab; });
+  if (tab === "home") renderHome();
   if (tab === "studio") renderStudio();
   if (tab === "repeat") { renderRepeatControls(); requestAnimationFrame(drawRepeat); }
   if (tab === "mock") renderMock();
@@ -1510,7 +1657,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { 
 
 renderAddMenu(); renderTip(); $("#pinCount").textContent = S.pins.length;
 const start = (location.hash || "").slice(1);
-go(["studio", "repeat", "mock", "board", "community"].includes(start) ? start : "studio");
+go(["home", "studio", "repeat", "mock", "board", "community"].includes(start) ? start : "home");
 })();
 </script>
 

@@ -4,6 +4,8 @@ A motif and print studio for fashion and surface designers. Think Illustrator's 
 
 ## What it does
 
+**Home** · A dashboard that greets you by name and shows your stats. Ask Mofi with one-tap prompt ideas, quick starts (new motif, freehand, palette from a photo, remix), pick up your last project, saved prints, mood board preview, a daily tip and fresh community work.
+
 **01 · Motif Studio**
 - Build radially symmetric motifs from layers: petals, leaves, circles, rings, dot rings, scallops, stars, hearts, diamonds, triangles, squares and rays.
 - Shape each layer with plain-language dials: repeat count, distance from center, length, fullness, tip shape, rotation, fill, outline and opacity.
