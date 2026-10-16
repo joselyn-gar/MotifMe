@@ -1,5 +1,7 @@
 # MotifMe
 
+**Live:** https://motifme.vercel.app
+
 A motif and print studio for fashion and surface designers. Think Illustrator's shape tools, Figma's layers, and a LinkedIn-style showcase, built for people who love making prints but don't want a steep learning curve.
 
 ## What it does

@@ -7,7 +7,7 @@ MotifMe is a motif and print studio for fashion designers. I took it from a roug
 
 ## Links
 - **Repo:** https://github.com/joselyn-gar/MotifMe
-- **Live site:** Vercel link pending. Add it here once it's deployed.
+- **Live site:** https://motifme.vercel.app
 - **Claude version (full features, private):** https://claude.ai/artifact/RK1BZvLxf3uF9vrixqpdpi
 
 ## The problem
