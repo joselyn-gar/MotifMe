@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="MotifMe is a motif and print studio for fashion designers. Build symmetric motifs, draw freehand, make scaled pattern repeats and see them on real products.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MotifMe · Motif & Print Studio">
+<meta property="og:description" content="Build motifs, turn them into print-ready repeats, and see them on a dress, tote or wallpaper. Free to try in your browser.">
+<meta property="og:url" content="https://joselyn-gar.github.io/MotifMe/">
+<meta property="og:image" content="https://joselyn-gar.github.io/MotifMe/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -149,14 +158,14 @@ textarea.txt{resize:vertical;min-height:70px}
 
 /* mockups */
 .mock{grid-template-columns:minmax(0,1fr) 300px}
-.mockstage{min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:16px;overflow:auto;align-content:start}
+.mockstage{min-width:0;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));grid-auto-rows:max-content;gap:14px;padding:16px;overflow:auto;align-content:start}
 .mockcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;text-align:left;padding:0}
 .mockcard.on{outline:2px solid var(--ink);outline-offset:-2px}
-.mockcard svg{width:100%;height:auto;display:block;background:var(--soft)}
+.mockcard svg{width:100%;height:auto;aspect-ratio:5/6;display:block;background:var(--soft)}
 .mockcard .cap{display:flex;justify-content:space-between;padding:10px 12px;font-weight:600;font-size:13px}
 .mockcard .cap span{font-family:var(--f-mono);font-weight:400;color:var(--muted);font-size:11px}
 .hero-mock{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.hero-mock svg{width:100%;height:auto;display:block;background:var(--soft)}
+.hero-mock svg{width:100%;height:auto;aspect-ratio:5/6;max-height:560px;display:block;background:var(--soft)}
 .hero-mock .meta{padding:20px;display:grid;gap:12px;align-content:start}
 .hero-mock h2{font-family:var(--f-display);font-size:28px;margin:0;line-height:1.1}
 
@@ -491,6 +500,9 @@ const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
 const hexOk = h => typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const deep = o => JSON.parse(JSON.stringify(o));
+// true inside the claude.ai viewer; false on the public website (GitHub Pages)
+const IN_CLAUDE = !!(window.claude && window.claude.use);
+const NO_POST_MSG = IN_CLAUDE ? "Sign in to claude.ai to post and appreciate prints." : "Community posting is coming soon. For now, remix the starter prints and pin your favorites.";
 const store = {
   get(k, d) { try { const v = localStorage.getItem("motifme:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem("motifme:" + k, JSON.stringify(v)); } catch {} }
@@ -564,7 +576,7 @@ const S = {
   pins: store.get("pins", []),
   tip: 0
 };
-S.sel = S.motif.layers[S.motif.layers.length - 3]?.id || S.motif.layers[0]?.id;
+S.sel = (S.motif.layers.find(l => l.name === "Outer petals") || S.motif.layers[0])?.id;
 let hist = [JSON.stringify(S.motif)], hpos = 0, histTimer = 0;
 function commit(immediate) {
   clearTimeout(histTimer);
@@ -1315,6 +1327,11 @@ async function saveFile(filename, blob) {
     catch (e) { if (e?.code === "declined") return; if (e?.code === "rate_limited") { toast("Another save is open. Try again in a moment."); return; } }
   }
   const url = URL.createObjectURL(blob);
+  if (!IN_CLAUDE) {
+    const a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000); toast("Downloaded " + filename); return;
+  }
   modal(`<h2>Your file is ready</h2><p class="hint" style="display:block">Downloads aren't available in this view. Right-click or long-press the image to save it.</p><img src="${url}" alt="${esc(filename)}" style="border-radius:10px;border:1px solid var(--line)"><button class="btn dark" data-close>Done</button>`);
 }
 
@@ -1490,11 +1507,11 @@ function renderCommunity() {
     <div class="stat"><span>Appreciations</span><b>${myLikes}</b></div>
     <div class="stat"><span>Pins on your board</span><b>${S.pins.length}</b></div>
     <button class="btn dark" id="postBtn3" ${DB && UID ? "" : "disabled"}>Share current print</button>
-    ${DB && UID ? "" : `<p class="hint" style="display:block">Sign in to claude.ai to post and appreciate prints.</p>`}
+    ${DB && UID ? "" : `<p class="hint" style="display:block">${NO_POST_MSG}</p>`}
   </div>`;
   $("#myName").textContent = pr.name || "You";
   const feed = $("#feed");
-  feed.innerHTML = posts.length ? posts.map(p => postCard(p)).join("") : `<div class="empty" style="grid-column:1/-1"><b>${filter === "All" ? "No prints shared yet" : "No " + esc(filter.toLowerCase()) + " prints yet"}</b><span>Be the first. Finish a repeat, then tap “Share to community”.</span></div>`;
+  feed.innerHTML = posts.length ? posts.map(p => postCard(p)).join("") : `<div class="empty" style="grid-column:1/-1"><b>${filter === "All" ? "No prints shared yet" : "No " + esc(filter.toLowerCase()) + " prints yet"}</b><span>${DB && UID ? "Be the first. Finish a repeat, then tap “Share to community”." : NO_POST_MSG}</span></div>`;
   feed.querySelectorAll(".post").forEach(el => { const p = posts.find(x => x.key === el.dataset.key); const nm = el.querySelector(".who b"); if (nm) nm.textContent = profiles[p.uid]?.name || "Someone"; });
   const st = starterSpecs(); $("#starter").innerHTML = st.map(p => postCard(p, true)).join("");
   [...posts, ...st].forEach(async p => { const im = document.querySelector(`[data-thumb="${CSS.escape(p.key)}"]`); if (im && p.spec?.motif) { try { im.src = await patternThumb(p.spec); } catch {} } });
@@ -1523,7 +1540,7 @@ $("#v-community").addEventListener("change", e => {
   DB.doc("showcase/" + UID).set({ headline: v, posts: mine?.posts || [] }).catch(() => toast("Couldn't save your headline."));
 });
 function openPost() {
-  if (!DB || !UID) { toast("Sign in to claude.ai to share prints with the community."); go("community"); return; }
+  if (!DB || !UID) { toast(NO_POST_MSG); go("community"); return; }
   modal(`<h2>Share to community</h2>
     <img id="postPrev" alt="Pattern preview" style="border-radius:10px;aspect-ratio:4/3;background:var(--soft);width:100%">
     <div class="field"><label for="ptitle">Title</label><input class="txt" id="ptitle" maxlength="60" value="${esc(S.motif.name)}"></div>
